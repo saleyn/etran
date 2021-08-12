@@ -1,5 +1,7 @@
 # Collection of Erlang Parse Transforms
 
+[![build](https://github.com/saleyn/etran/actions/workflows/erlang.yml/badge.svg)](https://github.com/saleyn/etran/actions/workflows/erlang.yml)
+
 ## Author
 
 Serge Aleynikov <saleyn(at)gmail.com>
