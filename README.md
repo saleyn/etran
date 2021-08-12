@@ -1,20 +1,37 @@
 # Collection of Erlang Parse Transforms
 
 [![build](https://github.com/saleyn/etran/actions/workflows/erlang.yml/badge.svg)](https://github.com/saleyn/etran/actions/workflows/erlang.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/etran.svg)](https://hex.pm/packages/etran)
+[![Hex.pm](https://img.shields.io/hexpm/dt/etran.svg)](https://hex.pm/packages/etran)
 
 ## Author
 
 Serge Aleynikov <saleyn(at)gmail.com>
 
-## Included transform modules
+## Dowloading
+
+* [Github](https://github.com/saleyn/etran)
+* [Hex.pm](https://hex.pm/packages/etran)
+
+## Building and Using
+
+```
+$ make
+```
+
+To use the transforms, compile your module with the `+'{parse_transform, Module}'` command-line
+option, or include `-compile({parse_transform, Module}).` in your source code, where `Module`
+is one of the transform modules implemented in this project.
+
+## Content
 
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | erlpipe               | Elixir-like pipeline for Erlang                                                      |
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
-| str                   | Stringification functions including `str/1` and `str/2` parse transforms             |
+| str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
-### Erlang Pipeline (erlpipe)
+### Erlang Pipeline (`erlpipe`)
 
 Inspired by the Elixir's `|>` pipeline operator.
 This tranform makes code with cascading function calls much more readable.
@@ -41,7 +58,14 @@ test(Arg1, Arg2) ->
             other_param)).
 ```
 
-### Ternary if
+Similar attempts to tackle this pipeline transform have been done by other developers:
+
+* https://github.com/stolen/pipeline
+* https://github.com/oltarasenko/epipe
+* https://github.com/clanchun/epipe
+* https://github.com/pouriya/pipeline
+
+### Ternary if (`iif`)
 
 This transform improves the code readability for cases that involve simple conditional tests.
 E.g.:
@@ -87,12 +111,10 @@ end.
 
 ```
 
-## Building and Using
+### String transforms (`str`)
 
-```
-$ make
-```
+This module implements a transform to stringify an Erlang term.
 
-To use `erlpipe`, compile your module with the `+'{parse_transform, Module}'` command-line
-option, or include `-compile({parse_transform, Module}).` in your source code, where `Module`
-is one of the transform modules implemented in this project.
+* `str(Term)`       is equivalent to `lists:flatten(io_lib:format("~p", [Term]))`.
+* `str(Fmt, Args)`  is equivalent to `lists:flatten(io_lib:format(Fmt,    Args))`.
+* `throw(Fmt,Args)` is equivalent to `throw(lists:flatten(io_lib:format(Fmt, Args)))`.

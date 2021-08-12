@@ -1,10 +1,13 @@
 all: compile
 
 compile:
-	rebar $@
+	rebar3 $@
 
 test:
-	rebar eunit
+	rebar3 eunit
+
+publish:
+	rebar3 hex publish
 
 test2:
 	erlc +debug_info -o ebin src/erlpipe.erl

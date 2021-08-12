@@ -5,8 +5,10 @@
 %%% ```
 %%% str(Fmt, Args)     -> lists:flatten(io_lib:format(Fmt, Args))
 %%% throw(Fmt, Args)   -> throw(lists:flatten(io_lib:format(Fmt, Args))
-%%% i2l(Int)           -> integer_to_list(Int)
-%%% b2l(Bin)           -> binary_to_list(Bin)
+%%% i2l(Int)           -> integer_to_list(Int)      % Enabled with compiled with
+%%%                                                 % the `{d,str_i2l}' option
+%%% b2l(Bin)           -> binary_to_list(Bin)       % Enabled with compiled with
+%%%                                                 % the `{d,str_b2l}' option
 %%% str(Term)          -> str:str(Term)
 %%% '''
 %%% @author Serge Aleynikov <saleyn(at)gmail(dot)com>
