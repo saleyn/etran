@@ -6,7 +6,15 @@
 
 Serge Aleynikov <saleyn(at)gmail.com>
 
-## Erlang Pipeline (erlpipe)
+## Included transform modules
+
+| Module                | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| erlpipe               | Elixir-like pipeline for Erlang                                                      |
+| iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
+| str                   | Stringification functions including `str/1` and `str/2` parse transforms             |
+
+### Erlang Pipeline (erlpipe)
 
 Inspired by the Elixir's `|>` pipeline operator.
 This tranform makes code with cascading function calls much more readable.
@@ -33,11 +41,58 @@ test(Arg1, Arg2) ->
             other_param)).
 ```
 
-## Building and using
+### Ternary if
+
+This transform improves the code readability for cases that involve simple conditional tests.
+E.g.:
+
+```
+iif(tuple_size(T) == 3, good, bad).
+
+iif(some_fun(A), match, ok, error).
+
+nvl(L, undefined).
+
+nvl(L, nil, hd(L))
+```
+
+are transformed to:
+
+```
+
+if tuple_size(T) == 3 ->
+  good;
+true ->
+  bad
+end.
+
+case some_fun(A) of
+  match   -> ok;
+  nomatch -> error
+end.
+
+case L of
+  []        -> undefined;
+  false     -> undefined;
+  undefined -> undefined;
+  _         -> L
+end.
+
+case L of
+  []        -> nil;
+  false     -> nil;
+  undefined -> nil;
+  _         -> hd(L)
+end.
+
+```
+
+## Building and Using
 
 ```
 $ make
 ```
 
-To use `erlpipe`, compile your module with the `+'{parse_transform, erlpipe}'` command-line
-option, or include `-compile({parse_transform, erlpipe}).` in your source code.
+To use `erlpipe`, compile your module with the `+'{parse_transform, Module}'` command-line
+option, or include `-compile({parse_transform, Module}).` in your source code, where `Module`
+is one of the transform modules implemented in this project.
