@@ -1,0 +1,5 @@
+{application, etran, [
+    {description, "Erlang Parse Transoforms"},
+    {vsn, "0.1"},
+    {applications, [kernel, stdlib]}
+  ]}.

@@ -8,7 +8,7 @@ erl_crash.dump
 # rebar 2.x
 .rebar
 rel/example_project
-ebin/*.beam
+ebin
 deps
 
 # rebar 3
