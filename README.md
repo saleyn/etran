@@ -28,5 +28,5 @@ Result = fun6(io_lib:format("~p\n", [fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))
 $ make
 ```
 
-To use `erlpipe`, compile target module with the `+'{parse_transform, erlpipe}'` option,
-or include `-compile({parse_transform, erlpipe}).` in your module.
+To use `erlpipe`, compile your module with the `+'{parse_transform, erlpipe}'` command-line
+option, or include `-compile({parse_transform, erlpipe}).` in your source code.
