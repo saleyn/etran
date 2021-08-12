@@ -8,7 +8,7 @@ test:
 
 test2:
 	erlc +debug_info -o ebin src/erlpipe.erl
-	erlc +debug_info -Dpipeline_verbose -pa ebin -o ebin/ t.erl
+	erlc +debug_info -Derlpipe_debug -pa ebin -o ebin/ t.erl
 	@cd ebin && erl -pa . -eval 'decompiler:run("t.beam"), halt(0).' -noinput
 	@echo "===================================="
 	@echo "Source:" && cat t.erl
