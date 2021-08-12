@@ -4,7 +4,7 @@
 
 Inspired by Elixir's `|>` pipeline operator.
 Transforms code from:
-```
+```erlang
 Result = [Arg1, Arg2]
        \ fun1
        \ mod:fun2
@@ -14,7 +14,7 @@ Result = [Arg1, Arg2]
        \ fun6.
 ```
 to the following equivalent:
-```
+```erlang
 Result = fun6(io_lib:format("~p\n", [fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))))])).
 ```
 
