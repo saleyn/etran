@@ -1,5 +1,9 @@
 # Collection of Erlang Parse Transforms
 
+## Author
+
+Serge Aleynikov <saleyn(at)gmail.com>
+
 ## Erlang Pipeline (erlpipe)
 
 Inspired by the Elixir's `|>` pipeline operator.
