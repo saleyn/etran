@@ -2,16 +2,16 @@
 
 ## Erlang Pipeline (erlpipe)
 
-Inspired by Elixir's `|>` pipeline operator.
+Inspired by the Elixir's `|>` pipeline operator.
 Transforms code from:
 ```erlang
 Result = [Arg1, Arg2]
-       \ fun1
-       \ mod:fun2
-       \ fun3()
-       \ fun4(Arg3, _)
-       \ io_lib:format("~p\n", [_])
-       \ fun6.
+       / fun1
+       / mod:fun2
+       / fun3()
+       / fun4(Arg3, _)
+       / io_lib:format("~p\n", [_])
+       / fun6.
 ```
 to the following equivalent:
 ```erlang
