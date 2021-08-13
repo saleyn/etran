@@ -1,7 +1,5 @@
 -module(erlpipe_test).
 
--export([erlpipe_test/0]).
-
 -compile({parse_transform, erlpipe}).
 
 -ifdef(TEST).
@@ -15,10 +13,14 @@
 -ifdef(EUNIT).
 
 erlpipe_test() ->
-  ?assertEqual("1\n", test1(1)),
-  ?assertEqual("ab2", test2(10)),
-  ?assertEqual(b,     test3(3, [{1,a},{10,b}])),
-  ?assertEqual(5.0,   test4(25, 5)).
+  ?assertEqual("1\n",   test1(1)),
+  ?assertEqual("ab2",   test2(10)),
+  ?assertEqual(b,       test3(3, [{1,a},{10,b}])),
+  ?assertEqual(5.0,     test4(25, 5)),
+  ?assertEqual(3,       "abc" / length),
+  ?assertEqual("abc",   <<"abc">> / binary_to_list),
+  ?assertEqual("1,2,3", {$1,$2,$3} / tuple_to_list / [[I] || I <- _] / string:join(_, ",")),
+  ?assertEqual("abc\n", "abc" / (_ ++ "\n")).
 
 test1(A) ->
   [A] / integer_to_list
@@ -40,10 +42,13 @@ test3(A, B) ->
   / element(2, _).
 
 test4(A, B) ->
-  % To make sure the parse transform doesn't touch `A / B' expressions.
+  % To make sure the parse transform doesn't touch `A / B' expressions,
+  % where `A' is a function call, an integer, or a float.
   C = begin
         max(A, 20) / min(B, 20)
       end,
-  max(A, 1) / max(C, 5).
+  D = 5.0 / C,
+  E = 5 / trunc(C),
+  erlang:max(A, 1) / max(C, 5) * D * E.
 
 -endif.

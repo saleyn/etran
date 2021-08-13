@@ -76,26 +76,39 @@ apply_args(AArgs, Exp, _Found) when is_list(AArgs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
   [E]  = transform(fun replace/1, [Exp]),
   {true, do_apply(E, Args)};
+apply_args({Ele, _Loc, _} = Arg, Exp, _Found)
+    when Ele==bin; Ele==tuple; Ele==string; Ele==atom ->
+  [E]  = transform(fun replace/1, [Exp]),
+  {true, do_apply(E, [Arg])};
+%% List comprehension
+apply_args({lc,_,_,_}=Arg, Exp, _Found) ->
+  Args = transform(fun replace/1, [Arg]),
+  [E]  = transform(fun replace/1, [Exp]),
+  {true, do_apply(E, Args)};
 apply_args(_Other, _Exp, Found) ->
   Found.
 
-do_apply({atom, Line, _V} = Function, Arguments) ->
-  {call, Line, Function, Arguments};
+do_apply({atom, Loc, _V} = Function, Arguments) ->
+  {call, Loc, Function, Arguments};
 
-do_apply({remote, Line, _M, _F} = Function, Arguments) ->
-  {call, Line, Function, Arguments};
+do_apply({remote, Loc, _M, _F} = Function, Arguments) ->
+  {call, Loc, Function, Arguments};
 
-do_apply({call, Line, Fun, []}, Arguments) ->
-  {call, Line, Fun, Arguments};
+do_apply({call, Loc, Fun, []}, Arguments) ->
+  {call, Loc, Fun, Arguments};
 
-do_apply({call, Line, Fun, ArgPattern}, Arguments) ->
-  Substituted = transform(fun(Forms) -> substitute(Arguments, Forms) end, ArgPattern),
-  {call, Line, Fun, Substituted};
+do_apply({I, Loc, Fun, Args}, Arguments) when I==call; I==lc ->
+  Substituted = transform(fun(Forms) -> substitute(Arguments, Forms) end, Args),
+  {I, Loc, Fun, Substituted};
+%% Use of operators
+do_apply({op, Loc, Op, Lhs, Rhs}, Arguments) ->
+  [LHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Lhs]),
+  [RHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Rhs]),
+  {op, Loc, Op, LHS, RHS};
 
 do_apply({var, _, '_'}, [Arg]) ->
   Arg;
 do_apply(Exp, _A) ->
-  io:format("-- skip: ~p\n", [Exp]),
   Exp.
 
 cons_to_list({cons, _, A, B}) ->
@@ -115,7 +128,9 @@ substitute(Args, {var, _, V}) when is_atom(V) ->
         lists:nth(M, Args)
       catch _:_ ->
         continue
-      end
+      end;
+    _ ->
+      continue
   end;
 substitute(_Args, _) ->
   continue.
