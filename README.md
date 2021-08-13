@@ -34,7 +34,10 @@ is one of the transform modules implemented in this project.
 ### Erlang Pipeline (`erlpipe`)
 
 Inspired by the Elixir's `|>` pipeline operator.
-This tranform makes code with cascading function calls much more readable.
+This tranform makes code with cascading function calls much more readable by using the `/` as a
+pipeline operator. The result of evaluation of the LHS expression is passed as an argument to
+the RHS expression.
+
 It transforms code from:
 
 ```erlang
@@ -47,7 +50,7 @@ test1(Arg1, Arg2, Arg3) ->
   [Arg1, Arg2]                                  %% Variables must be enclosed in `[...]`
   / fun1
   / mod:fun2
-  / fun3()
+  / fun3()                                      %% In function calls parenthesis are optional
   / fun4(Arg3, _)
   / io_lib:format("~p\n", [_])
   / fun6([1,2,3], _, other_param).
@@ -90,6 +93,10 @@ Similar attempts to tackle this pipeline transform have been done by other devel
 * https://github.com/oltarasenko/epipe
 * https://github.com/clanchun/epipe
 * https://github.com/pouriya/pipeline
+
+Yet, we subjectively believe that the choice of syntax in this implementation of transform
+is more succinct and elegant, and doesn't attempt to modify the meaning of the `/` operator
+for arithmetic LHS types (i.e. integers and floats).
 
 ### Ternary if (`iif`)
 
