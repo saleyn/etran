@@ -21,7 +21,8 @@ erlpipe_test() ->
   ?assertEqual(3,       "abc" / length),
   ?assertEqual("abc",   <<"abc">> / binary_to_list),
   ?assertEqual("1,2,3", {$1,$2,$3} / tuple_to_list / [[I] || I <- _] / string:join(_, ",")),
-  ?assertEqual("abc\n", "abc" / (_ ++ "\n")).
+  ?assertEqual("abc\n", "abc" / (_ ++ "\n")),
+  ?assertEqual(8,       "abc" / (fun(A) -> A - length(_) end)(10) / (_ + 1) ).
 
 test1(A) ->
   [A] / integer_to_list

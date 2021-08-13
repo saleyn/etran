@@ -98,13 +98,17 @@ do_apply({call, Loc, Fun, []}, Arguments) ->
   {call, Loc, Fun, Arguments};
 
 do_apply({I, Loc, Fun, Args}, Arguments) when I==call; I==lc ->
+  [NewFun]    = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Fun]),
   Substituted = transform(fun(Forms) -> substitute(Arguments, Forms) end, Args),
-  {I, Loc, Fun, Substituted};
+  {I, Loc, NewFun, Substituted};
 %% Use of operators
 do_apply({op, Loc, Op, Lhs, Rhs}, Arguments) ->
   [LHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Lhs]),
   [RHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Rhs]),
   {op, Loc, Op, LHS, RHS};
+do_apply({'fun', Loc, Clause}, Arguments) ->
+  [NewClause] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Clause]),
+  {'fun', Loc, NewClause};
 
 do_apply({var, _, '_'}, [Arg]) ->
   Arg;
