@@ -38,6 +38,11 @@ This tranform makes code with cascading function calls much more readable.
 It transforms code from:
 
 ```erlang
+print(L) when is_list(L) ->
+  [lists:split(3, L)]
+    / element(1, _)
+    / io:format("~s\n", [_]).
+
 test(Arg1, Arg2) ->
   [Arg1, Arg2]
   / fun1
@@ -52,6 +57,9 @@ test(Arg1, Arg2) ->
 to the following equivalent:
 
 ```erlang
+print(L) when is_list(L) ->
+  io:format("~s\n", [element(1, lists:split(3, L))]).
+
 test(Arg1, Arg2) ->
   fun7(fun6([1,2,3],
             io_lib:format("~p\n", [fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))))]),
