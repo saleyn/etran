@@ -52,41 +52,34 @@ parse_transform(AST, Options) ->
   Transformed.
 
 replace({op, _Loc, ?OP, Arg, Exp}) ->
-  case apply_args(Arg, Exp, false) of
-    {true, Res} ->
-      Res;
-    false ->
-      continue
-  end;
+  apply_args(Arg, Exp);
 replace(_Exp) ->
   continue.
 
-apply_args({op, _Loc, ?OP, A, E}, Exp, Found) ->
-  case apply_args(A, E, Found) of
-    {true, Args} ->
-      {true, do_apply(Exp, [Args])};
-    false ->
-      Found
+apply_args({op, _Loc, ?OP, A, E}, Exp) ->
+  case apply_args(A, E) of
+    continue -> continue;
+    Args     -> do_apply(Exp, [Args])
   end;
-apply_args({cons, _Loc, _, _} = List, Exp, _Found) ->
+apply_args({cons, _Loc, _, _} = List, Exp) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- cons_to_list(List)],
   [E]  = transform(fun replace/1, [Exp]),
-  {true, do_apply(E, Args)};
-apply_args(AArgs, Exp, _Found) when is_list(AArgs) ->
+  do_apply(E, Args);
+apply_args(AArgs, Exp) when is_list(AArgs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
   [E]  = transform(fun replace/1, [Exp]),
-  {true, do_apply(E, Args)};
-apply_args({Ele, _Loc, _} = Arg, Exp, _Found)
+  do_apply(E, Args);
+apply_args({Ele, _Loc, _} = Arg, Exp)
     when Ele==bin; Ele==tuple; Ele==string; Ele==atom ->
   [E]  = transform(fun replace/1, [Exp]),
-  {true, do_apply(E, [Arg])};
+  do_apply(E, [Arg]);
 %% List comprehension
-apply_args({lc,_,_,_}=Arg, Exp, _Found) ->
+apply_args({lc,_,_,_}=Arg, Exp) ->
   Args = transform(fun replace/1, [Arg]),
   [E]  = transform(fun replace/1, [Exp]),
-  {true, do_apply(E, Args)};
-apply_args(_Other, _Exp, Found) ->
-  Found.
+  do_apply(E, Args);
+apply_args(_Other, _Exp) ->
+  continue.
 
 do_apply({atom, Loc, _V} = Function, Arguments) ->
   {call, Loc, Function, Arguments};
