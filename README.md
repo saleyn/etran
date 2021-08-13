@@ -78,7 +78,7 @@ Similar attempts to tackle this pipeline transform have been done by other devel
 This transform improves the code readability for cases that involve simple conditional tests.
 E.g.:
 
-```
+```erlang
 iif(tuple_size(T) == 3, good, bad).
 
 iif(some_fun(A), match, ok, error).
@@ -90,8 +90,7 @@ nvl(L, nil, hd(L))
 
 are transformed to:
 
-```
-
+```erlang
 if tuple_size(T) == 3 ->
   good;
 true ->
@@ -116,7 +115,6 @@ case L of
   undefined -> nil;
   _         -> hd(L)
 end.
-
 ```
 
 ### String transforms (`str`)
