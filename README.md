@@ -52,7 +52,7 @@ test1(Arg1, Arg2, Arg3) ->
   / fun3()                                      %% In function calls parenthesis are optional
   / fun4(Arg3, _)
   / io_lib:format("~p\n", [_])
-  / fun6([1,2,3], _, other_param).
+  / fun6([1,2,3], _, other_param)
   / fun7.
 
 test2() ->
