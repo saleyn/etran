@@ -42,9 +42,8 @@ It transforms code from:
 
 ```erlang
 print(L) when is_list(L) ->
-  [lists:split(3, L)]                           %% Function calls must be enclosed in `[...]`
-    / element(1, _)
-    / io:format("~s\n", [_]).
+  [lists:split(3, L)]  / element(1, _)          %% Function calls must be enclosed in `[...]`
+                       / io:format("~s\n", [_]).
 
 test1(Arg1, Arg2, Arg3) ->
   [Arg1, Arg2]                                  %% Variables must be enclosed in `[...]`
@@ -73,7 +72,7 @@ to the following equivalent:
 print(L) when is_list(L) ->
   io:format("~s\n", [element(1, lists:split(3, L))]).
 
-test1(Arg1, Arg2) ->
+test1(Arg1, Arg2, Arg3) ->
   fun7(fun6([1,2,3],
             io_lib:format("~p\n", [fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))))]),
             other_param)).
@@ -116,15 +115,14 @@ nvl(L, nil, hd(L))
 are transformed to:
 
 ```erlang
-if tuple_size(T) == 3 ->
-  good;
-true ->
-  bad
+case tuple_size(T) == 3 of
+  true      -> good;
+  _         -> bad
 end.
 
 case some_fun(A) of
-  match   -> ok;
-  nomatch -> error
+  match     -> ok;
+  nomatch   -> error
 end.
 
 case L of
