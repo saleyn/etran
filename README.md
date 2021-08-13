@@ -34,7 +34,7 @@ is one of the transform modules implemented in this project.
 ### Erlang Pipeline (`erlpipe`)
 
 Inspired by the Elixir's `|>` pipeline operator.
-This tranform makes code with cascading function calls much more readable by using the `/` as a
+This tranform makes code with cascading function calls much more readable by using the `/` as the
 pipeline operator. The result of evaluation of the LHS expression is passed as an argument to
 the RHS expression.
 
