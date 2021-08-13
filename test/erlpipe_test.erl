@@ -17,6 +17,7 @@ erlpipe_test() ->
   ?assertEqual("ab2",   test2(10)),
   ?assertEqual(b,       test3(3, [{1,a},{10,b}])),
   ?assertEqual(5.0,     test4(25, 5)),
+  ?assertEqual(3,       abc / atom_to_list / length),
   ?assertEqual(3,       "abc" / length),
   ?assertEqual("abc",   <<"abc">> / binary_to_list),
   ?assertEqual("1,2,3", {$1,$2,$3} / tuple_to_list / [[I] || I <- _] / string:join(_, ",")),
