@@ -7,9 +7,11 @@ erl_crash.dump
 
 # rebar 2.x
 .rebar
+rebar.lock
 rel/example_project
 ebin
 deps
+doc
 
 # rebar 3
 .rebar3
