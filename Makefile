@@ -7,7 +7,7 @@ test:
 	rebar3 eunit
 
 publish:
-	rebar3 hex publish
+	rebar3 hex publish $(if $(replace),--replace)
 
 test2:
 	erlc +debug_info -o ebin src/erlpipe.erl

@@ -41,6 +41,8 @@
 -module(erlpipe).
 -export([parse_transform/2]).
 
+-define(OP, '/').
+
 %% @doc parse_transform entry point
 parse_transform(AST, Options) ->
   ShowAST       = lists:member({d,erlpipe_debug}, Options),
@@ -49,7 +51,7 @@ parse_transform(AST, Options) ->
   ShowAST andalso io:format("After:  ~p~n", [Transformed]),
   Transformed.
 
-replace({op, _Loc, '/', Arg, Exp}) ->
+replace({op, _Loc, ?OP, Arg, Exp}) ->
   case apply_args(Arg, Exp, false) of
     {true, Res} ->
       Res;
@@ -59,7 +61,7 @@ replace({op, _Loc, '/', Arg, Exp}) ->
 replace(_Exp) ->
   continue.
 
-apply_args({op, _Loc, '/', A, E}, Exp, Found) ->
+apply_args({op, _Loc, ?OP, A, E}, Exp, Found) ->
   case apply_args(A, E, Found) of
     {true, Args} ->
       {true, do_apply(Exp, [Args])};
