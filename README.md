@@ -61,7 +61,7 @@ test2() ->
   "1,2,3" = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
                        / [[I] || I <- _]
                        / string:join(_, ","),
-  "abc\n" = "abc"      / (_ ++ "\n")),          %% Can use operators on the right hand side
+  "abc\n" = "abc"      / (_ ++ "\n"),          %% Can use operators on the right hand side
   2.0     = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
   2       = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
 ```
