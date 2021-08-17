@@ -14,6 +14,9 @@ get-addon:
 compile:
 	rebar3 $@
 
+clean:
+	rm -fr doc ebin _build
+
 test:
 	ERL_LIBS= rebar3 eunit
 
