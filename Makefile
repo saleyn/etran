@@ -15,7 +15,7 @@ compile:
 	rebar3 $@
 
 clean:
-	rm -fr doc ebin _build
+	rm -fr doc ebin _build build-aux/*.{edoc,mk,awk,css,sh}
 
 test:
 	ERL_LIBS= rebar3 eunit
