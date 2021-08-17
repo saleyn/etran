@@ -12,6 +12,7 @@ rel/example_project
 ebin
 deps
 doc
+build-aux
 
 # rebar 3
 .rebar3

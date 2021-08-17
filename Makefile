@@ -1,4 +1,15 @@
+ifeq (, $(shell [ -f build-aux/docs-addon.mk ] && echo ok))
+all: get-addon compile
+else
 all: compile
+endif
+
+-include build-aux/docs-addon.mk
+
+get-addon:
+	@echo "Fetching build-aux/docs-addon.mk" && \
+		mkdir -p build-aux && \
+		curl -s -o build-aux/docs-addon.mk https://raw.githubusercontent.com/saleyn/util/master/build-aux/docs-addon.mk
 
 compile:
 	rebar3 $@

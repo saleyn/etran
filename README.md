@@ -4,6 +4,9 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/etran.svg)](https://hex.pm/packages/etran)
 [![Hex.pm](https://img.shields.io/hexpm/dt/etran.svg)](https://hex.pm/packages/etran)
 
+This library includes useful parse transforms including Elixir-like pipeline operator for
+cascading function calls.
+
 ## Author
 
 Serge Aleynikov <saleyn(at)gmail.com>
@@ -131,7 +134,9 @@ This module implements a transform to stringify an Erlang term.
 
 * `str(Term)`       is equivalent to `lists:flatten(io_lib:format("~p", [Term]))`.
 * `str(Fmt, Args)`  is equivalent to `lists:flatten(io_lib:format(Fmt,    Args))`.
-* `throw(Fmt,Args)` is equivalent to `throw(lists:flatten(io_lib:format(Fmt, Args)))`.## Dowloading
+* `throw(Fmt,Args)` is equivalent to `throw(lists:flatten(io_lib:format(Fmt, Args)))`.
+
+## Dowloading
 
 * [Github](https://github.com/saleyn/etran)
 * [Hex.pm](https://hex.pm/packages/etran)
