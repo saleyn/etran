@@ -22,7 +22,7 @@ Serge Aleynikov <saleyn(at)gmail.com>
 ### Erlang Pipeline (`erlpipe`)
 
 Inspired by the Elixir's `|>` pipeline operator.
-This tranform makes code with cascading function calls much more readable by using the `/` as a
+This tranform makes code with cascading function calls much more readable by using the `/` as the
 pipeline operator. The result of evaluation of the LHS expression is passed as an argument to
 the RHS expression.
 
@@ -49,7 +49,7 @@ test2() ->
   "1,2,3" = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
                        / [[I] || I <- _]
                        / string:join(_, ","),
-  "abc\n" = "abc"      / (_ ++ "\n")),          %% Can use operators on the right hand side
+  "abc\n" = "abc"      / (_ ++ "\n"),          %% Can use operators on the right hand side
   2.0     = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
   2       = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
 ```
