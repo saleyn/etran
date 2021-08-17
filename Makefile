@@ -1,3 +1,5 @@
+PROJECT := $(notdir $(PWD))
+
 ifeq (, $(shell [ -f build-aux/docs-addon.mk ] && echo ok))
 all: get-addon compile
 else
@@ -22,6 +24,11 @@ test:
 
 publish:
 	rebar3 hex publish $(if $(replace),--replace)
+
+set-version:
+	@[ -z $(version) ] && echo "Missing version=X.Y.Z!" && exit 1 || true
+	@sed -i "s/{$(PROJECT), \"[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\"}/{$(PROJECT), \"$(version)\"}/" rebar.config
+	@sed -i "s/{vsn, \"[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\"}/{vsn, \"$(version)\"}/" src/$(PROJECT).app.src
 
 debug:
 	erlc +debug_info -Derlpipe_debug +'{parse_transform,erlpipe}' -pa _build/default/lib/etran/ebin -o _build/default/lib/etran/ebin $(file).erl
