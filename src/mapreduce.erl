@@ -116,13 +116,12 @@ replace({lc,Loc,{tuple,_,ResBody0},
         % Simple case with one generator and no filters:
         % [{I, S+I} || S = 1, I <- L]
         {Loc0, FunArg0, List0};
-      [{generate, {Ln1,Pos1} = Loc0, FunArg0, List0}] when Filters /= [] ->
+      [{generate, Loc0, FunArg0, List0}] when Filters /= [] ->
         % Simple case with one generator and no filters:
         %   [{I, S+I} || S = 1, {I,_} <- L, I > 1, I < 10]
         % Convert the comprehension with filter into:
         %   lists:mapfoldl(fun({I,_}, S) -> {I,S+I} end, 1, [_V || _V = {I,_} <- L, I > 1, I < 10])
-        Var   = {var,Loc0,list_to_atom("_I@"++integer_to_list(Ln1)++"_"++integer_to_list(Pos1))},
-        Match = {match, Loc0, Var, FunArg0},
+        {Var,Match} = maybe_make_var(Loc0, FunArg0),
         {Loc0, FunArg0, {lc, Loc0, Var,
                                [{generate, Loc0, Match, List0}| Filters]}};
       _ ->
@@ -131,9 +130,9 @@ replace({lc,Loc,{tuple,_,ResBody0},
         % - Make a list:
         %      [{I,FunArg1,LCList1}, {J,FunArg2,LCList2}, ...]
         VarsList = lists:reverse(
-          lists:foldl(fun({generate, {Ln1,Pos1} = GLoc1, FunArg0, List0}, ALists) ->
-            Var   = list_to_atom("_I@"++integer_to_list(Ln1)++"_"++integer_to_list(Pos1)),
-            [{{var,GLoc1,Var}, FunArg0, List0}|ALists]
+          lists:foldl(fun({generate, GLoc1, FunArg0, List0}, ALists) ->
+            {Var,Match} = maybe_make_var(GLoc1, FunArg0),
+            [{Var, Match, List0}|ALists]
           end, [], Gens)),
 
         % - Create a new list comprehension:
@@ -142,8 +141,8 @@ replace({lc,Loc,{tuple,_,ResBody0},
         ArgVars = {tuple, Loc, Vars},
         FArgs   = {tuple, Loc, [A || {_,A,_} <- VarsList]},
         ListLCs = {lc, Loc, ArgVars,
-                      [{generate, GLoc, {match, GLoc, V, Expr}, LList}
-                       || {{var,GLoc,_}=V, Expr, LList} <- VarsList] ++ Filters},
+                      [{generate, GLoc, Match, LList}
+                       || {{var,GLoc,_}, Match, LList} <- VarsList] ++ Filters},
         {Loc, FArgs, ListLCs}
     end,
   % Finally, rewrite into:
@@ -191,13 +190,12 @@ replace({lc,Loc, ResBody0,
         % Simple case with one generator and no filters:
         % [{I, S+I} || S = 1, I <- L]
         {Loc0, FunArg0, List0};
-      [{generate, {Ln1,Pos1} = Loc0, FunArg0, List0}] when Filters /= [] ->
+      [{generate, Loc0, FunArg0, List0}] when Filters /= [] ->
         % Simple case with one generator and no filters:
         %   [{I, S+I} || S = 1, {I,_} <- L, I > 1, I < 10]
         % Convert the comprehension with filter into:
         %   lists:mapfoldl(fun({I,_}, S) -> {I,S+I} end, 1, [_V || _V = {I,_} <- L, I > 1, I < 10])
-        Var   = {var,Loc0,list_to_atom("_I@"++integer_to_list(Ln1)++"_"++integer_to_list(Pos1))},
-        Match = {match, Loc0, Var, FunArg0},
+        {Var,Match} = maybe_make_var(Loc0, FunArg0),
         {Loc0, FunArg0, {lc, Loc0, Var,
                                [{generate, Loc0, Match, List0}| Filters]}};
       _ ->
@@ -239,3 +237,10 @@ replace({lc,Loc, ResBody0,
 
 replace(_Exp) ->
   continue.
+
+maybe_make_var(_, {var,_,_} = Arg) ->
+  {Arg, Arg};
+maybe_make_var({Ln,Pos}=Loc, Arg) ->
+  Var   = {var,Loc,list_to_atom("_I@"++integer_to_list(Ln)++"_"++integer_to_list(Pos))},
+  Match = {match, Loc, Var, Arg},
+  {Var, Match}.
