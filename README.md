@@ -1,15 +1,14 @@
 # Collection of Erlang Parse Transforms
 
+**Author**: Serge Aleynikov <saleyn(at)gmail.com>
+**License**: MIT License
+
 [![build](https://github.com/saleyn/etran/actions/workflows/erlang.yml/badge.svg)](https://github.com/saleyn/etran/actions/workflows/erlang.yml)
 [![Hex.pm](https://img.shields.io/hexpm/v/etran.svg)](https://hex.pm/packages/etran)
 [![Hex.pm](https://img.shields.io/hexpm/dt/etran.svg)](https://hex.pm/packages/etran)
 
 This library includes useful parse transforms including Elixir-like pipeline operator for
 cascading function calls.
-
-## Author
-
-Serge Aleynikov <saleyn(at)gmail.com>
 
 ## Content
 
