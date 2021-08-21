@@ -16,13 +16,14 @@ Serge Aleynikov <saleyn(at)gmail.com>
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | erlpipe               | Elixir-like pipeline for Erlang                                                      |
+| mapreduce             | Fold Comprehension and FoldMap Comprehension                                         |
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
 ### Erlang Pipeline (`erlpipe`)
 
 Inspired by the Elixir's `|>` pipeline operator.
-This tranform makes code with cascading function calls much more readable by using the `/` as the
+This transform makes code with cascading function calls much more readable by using the `/` as the
 pipeline operator. The result of evaluation of the LHS expression is passed as an argument to
 the RHS expression.
 
@@ -84,6 +85,40 @@ Similar attempts to tackle this pipeline transform have been done by other devel
 Yet, we subjectively believe that the choice of syntax in this implementation of transform
 is more succinct and elegant, and doesn't attempt to modify the meaning of the `/` operator
 for arithmetic LHS types (i.e. integers and floats).
+
+### Map-Reduce: Fold and MapFold Comprehensions (`mapreduce`)
+
+#### Fold Comprehension
+
+To invoke the fold comprehension transform include the initial state
+assignment into a comprehension that returns a non-tuple expression:
+```erlang
+[S+I || S = 1, I <- L].
+ ^^^    ^^^^^
+```
+
+In this example the `S` variable gets assigned the initial state `1`, and
+the `S+I` expression represents the body of the fold function that
+is passed the iteration variable `I` and the state variable `S`:
+```erlang
+lists:foldl(fun(I, S) -> S+I end, 1, L).
+```
+
+#### MapFold Comprehension
+
+To invoke the mapfold comprehension transform include the initial state
+assignment into a comprehension, and return a tuple expression:
+```erlang
+[{I, S+I} || S = 1, I <- L].
+ ^^^^^^^^    ^^^^^
+```
+
+In this example the `S` variable gets assigned the initial state `1`, and
+the `{I, S+I}` expression represents the body of the fold function that
+is passed the iteration variable `I` and the state variable `S`:
+```erlang
+lists:mapfoldl(fun(I, S) -> S+I end, 1, L).
+```
 
 ### Ternary if (`iif`)
 

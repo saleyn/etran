@@ -39,7 +39,9 @@
 %%% SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 %%%-----------------------------------------------------------------------------
 -module(erlpipe).
+
 -export([parse_transform/2]).
+-import(etran_util, [transform/2]).
 
 -define(OP, '/').
 
@@ -131,22 +133,3 @@ substitute(Args, {var, _, V}) when is_atom(V) ->
   end;
 substitute(_Args, _) ->
   continue.
-
-transform(Fun, Forms) when is_function(Fun, 1), is_list(Forms) ->
-  transform2(Fun, Forms).
-
-transform2(_, []) ->
-  [];
-transform2(Fun, [F|Fs]) when is_atom(element(1,F)) ->
-  case Fun(F) of
-    NewF when is_tuple(NewF) ->
-      [NewF | transform2(Fun, Fs)];
-    continue ->
-      [list_to_tuple(transform2(Fun, tuple_to_list(F))) | transform2(Fun, Fs)]
-  end;
-transform2(Fun, [L|Fs]) when is_list(L) ->
-  [transform2(Fun, L) | transform2(Fun, Fs)];
-transform2(Fun, [F|Fs]) ->
-  [F | transform2(Fun, Fs)];
-transform2(_, F) ->
-  F.
