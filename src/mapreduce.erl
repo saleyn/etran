@@ -30,8 +30,8 @@
 %%% '''
 %%%
 %%% In this example the `S' variable gets assigned the initial state `1', and
-%%% the `{I, S+I}' expression represents the body of the fold function that
-%%% is passed the iteration variable `I' and the state variable `S':
+%%% the `{I, S+I}' two-elements tuple expression represents the body of the fold
+%%% function that is passed the iteration variable `I' and the state variable `S':
 %%% ```
 %%% lists:mapfoldl(fun(I, S) -> S+I end, 1, L).
 %%% '''
@@ -204,9 +204,9 @@ replace({lc,Loc, ResBody0,
         % - Make a list:
         %      [{I,FunArg1,LCList1}, {J,FunArg2,LCList2}, ...]
         VarsList = lists:reverse(
-          lists:foldl(fun({generate, {Ln1,Pos1} = GLoc1, FunArg0, List0}, ALists) ->
-            Var   = list_to_atom("_I@"++integer_to_list(Ln1)++"_"++integer_to_list(Pos1)),
-            [{{var,GLoc1,Var}, FunArg0, List0}|ALists]
+          lists:foldl(fun({generate, GLoc, FunArg0, List0}, ALists) ->
+            {Var,Match} = maybe_make_var(GLoc, FunArg0),
+            [{Var, Match, List0}|ALists]
           end, [], Gens)),
 
         % - Create a new list comprehension:
@@ -215,8 +215,8 @@ replace({lc,Loc, ResBody0,
         ArgVars = {tuple, Loc, Vars},
         FArgs   = {tuple, Loc, [A || {_,A,_} <- VarsList]},
         ListLCs = {lc, Loc, ArgVars,
-                      [{generate, GLoc, {match, GLoc, V, Expr}, LList}
-                       || {{var,GLoc,_}=V, Expr, LList} <- VarsList] ++ Filters},
+                      [{generate, GLoc, Match, LList}
+                       || {{var,GLoc,_}, Match, LList} <- VarsList] ++ Filters},
         {Loc, FArgs, ListLCs}
     end,
   % Finally, rewrite into:

@@ -16,7 +16,7 @@ Serge Aleynikov <saleyn(at)gmail.com>
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | erlpipe               | Elixir-like pipeline for Erlang                                                      |
-| mapreduce             | Fold Comprehension and FoldMap Comprehension                                         |
+| mapreduce             | MapReduce: Fold Comprehension and FoldMap Comprehension                              |
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
@@ -114,8 +114,8 @@ assignment into a comprehension, and return a tuple expression:
 ```
 
 In this example the `S` variable gets assigned the initial state `1`, and
-the `{I, S+I}` expression represents the body of the fold function that
-is passed the iteration variable `I` and the state variable `S`:
+the `{I, S+I}` two-elements tuple expression represents the body of the fold
+function that is passed the iteration variable `I` and the state variable `S`:
 ```erlang
 lists:mapfoldl(fun(I, S) -> S+I end, 1, L).
 ```
