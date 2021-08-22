@@ -21,3 +21,5 @@ jobs:
       run:  make
     - name: Run tests
       run:  make test
+    - name: Make documentation
+      run:  make gh-pages
