@@ -1,14 +1,10 @@
 PROJECT := $(notdir $(PWD))
 
-ifeq (, $(shell [ -f build-aux/docs-addon.mk ] && echo ok))
-all: get-addon compile
-else
 all: compile
-endif
 
 -include build-aux/docs-addon.mk
 
-get-addon:
+build-aux/docs-addon.mk:
 	@echo "Fetching build-aux/docs-addon.mk" && \
 		mkdir -p build-aux && \
 		curl -s -o build-aux/docs-addon.mk https://raw.githubusercontent.com/saleyn/util/master/build-aux/docs-addon.mk
@@ -17,7 +13,10 @@ compile:
 	rebar3 $@
 
 clean:
-	rm -fr doc ebin _build build-aux/*.{edoc,mk,awk,css,sh}
+	rm -fr doc ebin _build build-aux/*.{edoc,awk,css,sh}
+
+distclean: clean
+	rm -f build-aux/*.mk
 
 test:
 	ERL_LIBS= rebar3 eunit
@@ -43,3 +42,4 @@ debug:
 	@rm -f _build/default/lib/etran/ebin/$(file).{erl,beam}
 
 .PHONY: test
+.SUFFIXES:
