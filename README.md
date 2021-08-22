@@ -186,13 +186,13 @@ To use the transforms, compile your module with the `+'{parse_transform, Module}
 option, or include `-compile({parse_transform, Module}).` in your source code, where `Module`
 is one of the transform modules implemented in this project.
 
-To use all transforms implemented by the `etran' application, compile your module with this
+To use all transforms implemented by the `etran` application, compile your module with this
 command-line option: `+'{parse_transform, etran}'`.
 ```
 erlc +debug_info +'{parse_transform, etran}' -o ebin YourModule.erl
 ```
 
-If you are using `rebar3' to build your project, than add to `rebar.config':
+If you are using `rebar3` to build your project, than add to `rebar.config`:
 ```
 {erl_opts, [debug_info, {parse_transform, etran}]}.
 ```
