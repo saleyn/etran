@@ -31,6 +31,7 @@ set-version:
 	@sed -i "s/{vsn, \"[[:digit:]]\+\.[[:digit:]]\+\.[[:digit:]]\+\"}/{vsn, \"$(version)\"}/" src/$(PROJECT).app.src
 
 debug:
+	erlc +debug_info -pa _build/default/lib/etran/ebin -o _build/default/lib/etran/ebin src/$(transform).erl
 	erlc +debug_info $(DEBUG) +'{parse_transform,$(transform)}' -pa _build/default/lib/etran/ebin -o _build/default/lib/etran/ebin $(file).erl
 	@cd _build/default/lib/etran/ebin && erl -pa . -eval 'decompiler:run("$(file).beam"), halt(0).' -noinput
 	@echo "===================================="

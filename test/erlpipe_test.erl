@@ -1,3 +1,4 @@
+%% vim:ts=2:sw=2:et
 -module(erlpipe_test).
 
 -compile({parse_transform, erlpipe}).
@@ -17,6 +18,9 @@ erlpipe_test() ->
   ?assertEqual("ab2",   test2(10)),
   ?assertEqual(b,       test3(3, [{1,a},{10,b}])),
   ?assertEqual(5.0,     test4(25, 5)),
+  ?assertEqual(8,       test5()),
+  ?assertEqual(1.0,     10 / min(2,3) / 5.0),
+  ?assertEqual(2.0,     10 / 5),
   ?assertEqual(1,       [[1]] / hd),
   ?assertEqual(3,       abc / atom_to_list / length),
   ?assertEqual(3,       "abc" / length),
@@ -31,7 +35,8 @@ test1(A) ->
       / list_to_integer()
       / element(_, {1,2})
       / io_lib:format("~w\n", [_])
-      / lists:flatten.
+      / lists:flatten
+      / ttt(get(env)).
 
 test2(A) ->
   [A+10]
@@ -54,5 +59,20 @@ test4(A, B) ->
   D = 5.0 / C,
   E = 5 / trunc(C),
   erlang:max(A, 1) / max(C, 5) * D * E.
+
+test5() ->
+  %% I.e.: g(length([max(1,2)]), f(5, h(t(2)))).
+  [1] / max(2)
+      / ([2] ++ [_])
+      / length([_])
+      / ([t(2)] / f(5, [_] / h) / g).
+
+t(A)    -> A.
+h(I)    -> I.
+f(I, J) -> I+J.
+g(I, J) -> I+J.
+
+ttt(A, _B) ->
+  A.
 
 -endif.

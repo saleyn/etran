@@ -1,3 +1,4 @@
+%% vim:ts=2:sw=2:et
 -module(mapreduce_test).
 
 -compile({parse_transform, mapreduce}).

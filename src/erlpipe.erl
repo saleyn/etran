@@ -1,3 +1,4 @@
+%%% vim:ts=2:sw=2:et
 %%%-----------------------------------------------------------------------------
 %%% @doc Erlang pipeline parse transform
 %%%
@@ -47,11 +48,7 @@
 
 %% @doc parse_transform entry point
 parse_transform(AST, Options) ->
-  ShowAST       = lists:member({d,erlpipe_debug}, Options),
-  ShowAST andalso io:format("Before: ~p~n", [AST]),
-  Transformed   = transform(fun replace/1, AST),
-  ShowAST andalso io:format("After:  ~p~n", [Transformed]),
-  Transformed.
+  etran_util:apply_transform(?MODULE, fun replace/1, AST, Options).
 
 replace({op, _Loc, ?OP, Arg, Exp}) ->
   apply_args(Arg, Exp);
@@ -61,26 +58,30 @@ replace(_Exp) ->
 apply_args({op, _Loc, ?OP, A, E}, Exp) ->
   case apply_args(A, E) of
     continue -> continue;
-    Args     -> do_apply(Exp, [Args])
+    [Args]   -> apply_args(Exp, [Args]);
+    Args     -> apply_args(Exp, [Args])
   end;
 apply_args({cons, _Loc, _, _} = List, Exp) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- cons_to_list(List)],
   [E]  = transform(fun replace/1, [Exp]),
   do_apply(E, Args);
-apply_args(AArgs, Exp) when is_list(AArgs) ->
+apply_args(AArgs, Exp) when is_list(AArgs), is_list(Exp) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
-  [E]  = transform(fun replace/1, [Exp]),
+  [E]  = transform(fun replace/1, Exp),
   do_apply(E, Args);
-apply_args({Ele, _Loc, _} = Arg, Exp)
-    when Ele==bin; Ele==tuple; Ele==string; Ele==atom ->
-  [E]  = transform(fun replace/1, [Exp]),
-  do_apply(E, [Arg]);
+apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==string ->
+  if is_tuple(RHS) ->
+    do_apply(RHS, [Arg]);
+  true ->
+    do_apply(Arg, RHS)
+  end;
 %% List comprehension
-apply_args({lc,_,_,_}=Arg, Exp) ->
-  Args = transform(fun replace/1, [Arg]),
-  [E]  = transform(fun replace/1, [Exp]),
-  do_apply(E, Args);
-apply_args(_Other, _Exp) ->
+apply_args({lc,_,_,_}=Lhs, Rhs) ->
+  [LHS] = transform(fun(Forms) -> substitute(Rhs, Forms) end, Lhs),
+  LHS;
+apply_args(LHS, RHS) when is_tuple(LHS), is_list(RHS) ->
+  do_apply(LHS, RHS);
+apply_args(LHS, RHS) when is_tuple(LHS), is_tuple(RHS) ->
   continue.
 
 do_apply({atom, Loc, _V} = Function, Arguments) ->
@@ -92,14 +93,20 @@ do_apply({remote, Loc, _M, _F} = Function, Arguments) ->
 do_apply({call, Loc, Fun, []}, Arguments) ->
   {call, Loc, Fun, Arguments};
 
-do_apply({I, Loc, Fun, Args}, Arguments) when I==call; I==lc ->
-  [NewFun]    = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Fun]),
-  Substituted = transform(fun(Forms) -> substitute(Arguments, Forms) end, Args),
-  {I, Loc, NewFun, Substituted};
+do_apply({Op, Loc, Fun, Args} = LHS, RHS) when Op =:= call; Op =:= lc ->
+  [NewLHS] = transform(fun(Forms) -> substitute(RHS, Forms) end, [LHS]),
+  case NewLHS of
+    LHS ->
+      {Op, Loc, Fun, [hd(RHS) | Args]};
+    ResLHS ->
+      ResLHS
+  end;
 %% Use of operators
 do_apply({op, Loc, Op, Lhs, Rhs}, Arguments) ->
-  [LHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Lhs]),
-  [RHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Rhs]),
+  NewLhs = transform(fun replace/1, [Lhs]),
+  NewRhs = transform(fun replace/1, [Rhs]),
+  [LHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, NewLhs),
+  [RHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, NewRhs),
   {op, Loc, Op, LHS, RHS};
 do_apply({'fun', Loc, Clause}, Arguments) ->
   [NewClause] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Clause]),
@@ -107,7 +114,7 @@ do_apply({'fun', Loc, Clause}, Arguments) ->
 
 do_apply({var, _, '_'}, [Arg]) ->
   Arg;
-do_apply(Exp, _A) ->
+do_apply(Exp, _A) when is_tuple(Exp) ->
   Exp.
 
 cons_to_list({cons, _, A, B}) ->

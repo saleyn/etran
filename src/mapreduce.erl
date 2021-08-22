@@ -1,3 +1,4 @@
+%%% vim:ts=2:sw=2:et
 %%%-----------------------------------------------------------------------------
 %%% @doc Erlang map-reduce parse transform
 %%%
@@ -80,15 +81,7 @@
 
 %% @doc parse_transform entry point
 parse_transform(AST, Options) ->
-  OrigAST       = lists:member({d,mapreduce_orig},Options),
-  ResAST        = lists:member({d,mapreduce_ast}, Options),
-  SrcAST        = lists:member({d,mapreduce_src}, Options),
-  OrigAST andalso io:format("Before: ~p~n", [AST]),
-  Transformed   = transform(fun replace/1, AST),
-  ResAST  andalso io:format("After:  ~p~n", [Transformed]),
-  SrcAST  andalso io:format("Resulting Source:\n  ~s~n",
-                            [erl_prettypr:format(erl_syntax:form_list(tl(Transformed)))]),
-  Transformed.
+  etran_util:apply_transform(?MODULE, fun replace/1, AST, Options).
 
 %% MapReduce transform
 %% ===================

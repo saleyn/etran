@@ -1,3 +1,4 @@
+%%% vim:ts=2:sw=2:et
 %%%-----------------------------------------------------------------------------
 %%% @doc Parse transform that implements `str/2'
 %%%
@@ -87,10 +88,10 @@ get_float_fmt()     -> get(float_fmt).
 }).
 
 %% @doc Parse transform to be used by providing `{parse_transform, str}' option.
-parse_transform(Ast, Opts) ->
+parse_transform(AST, Opts) ->
   I2L  = lists:member({d,str_i2l}, Opts),
   B2L  = lists:member({d,str_b2l}, Opts),
-  Tree = erl_syntax:form_list(Ast),
+  Tree = erl_syntax:form_list(AST),
   ModifiedTree = recurse(Tree, #opts{i2l=I2L, b2l=B2L}),
   erase(line),
   erl_syntax:revert_forms(ModifiedTree).

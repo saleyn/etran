@@ -29,17 +29,23 @@
 
 -export([parse_transform/2]).
 
+-compile({parse_transform, erlpipe}).
+
 %% @doc parse_transform entry point
 parse_transform(AST, Options) ->
-  R1 = iif:parse_transform(AST, Options),
-  R2 = erlpipe:parse_transform(R1, Options),
-  R3 = mapreduce:parse_transform(R2, Options),
+  [AST]
+    / erlpipe:parse_transform(Options)
+    / iif:parse_transform(Options)
+    / mapreduce:parse_transform(Options)
+    / str:parse_transform(Options)
+    / gin(Options).
+
+gin(AST, Options) ->
   %% Apply the `gin' transform if it's found
   %% See: https://github.com/mad-cocktail/gin
-  R4 = case code:which(gin) of
-         non_existing ->
-           R3;
-         _ ->
-           gin:parse_transform(R3, Options)
-       end,
-  R4.
+  case code:which(gin) of
+    non_existing ->
+      AST;
+    _ ->
+      gin:parse_transform(AST, Options)
+  end.

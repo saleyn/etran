@@ -1,3 +1,4 @@
+%%% vim:ts=2:sw=2:et
 %%%-----------------------------------------------------------------------------
 %%% @doc Conditional expression functions
 %%%
@@ -63,23 +64,17 @@
 %% erlc -Diif_debug=N ...  ->  Opts = [{d,debug,N}|_]
 %% erlc -Diif_debug ...    ->  Opts = [{d,debug}|_]
 %% '''
-parse_transform(Ast, Opts) ->
-  Debug = case lists:keyfind(iif_debug, 2, Opts) of
-            {d,iif_debug}              -> 3;
-            {d,iif_debug,N} when N > 0 -> N;
-            _                          -> 0
-          end,
-  Args = #{debug => Debug},
-	(Debug band 1) > 0 andalso io:format("AST:\n  ~p~n",[Ast]),
-  Tree = erl_syntax:form_list(Ast),
-	(Debug band 4) > 0 andalso io:format("AST Tree:\n  ~p~n",[Tree]),
+parse_transform(AST, Opts) ->
+  #{orig := PrntOrig, ast := PrntAST} = etran_util:debug_options(?MODULE, Opts),
+	PrntOrig andalso io:format("AST Before:\n  ~p~n",[AST]),
+  Tree = erl_syntax:form_list(AST),
   put(count, 1),
   try
-    ModifiedTree = recurse(Tree, Args),
+    ModifiedTree = recurse(Tree, #{}),
     erase(line),
     erase(count),
     Res = erl_syntax:revert_forms(ModifiedTree),
-    (Debug band 2) > 0 andalso io:format("AST After:\n  ~p~n",[Res]),
+    PrntAST andalso io:format("AST After:\n  ~p~n",[Res]),
     Res
   catch E:R:S ->
     io:format(standard_error, "Error transforming AST: ~p\n  ~p\n", [R, S]),
@@ -204,4 +199,4 @@ update(Node, _Opts) ->
       end;
   _ ->
    Node
-	end.
+  end.
