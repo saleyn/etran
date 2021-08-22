@@ -50,24 +50,24 @@
 parse_transform(AST, Options) ->
   etran_util:apply_transform(?MODULE, fun replace/1, AST, Options).
 
-replace({op, _Loc, ?OP, Arg, Exp}) ->
-  apply_args(Arg, Exp);
+replace({op, _Loc, ?OP, Arg, Rhs}) ->
+  apply_args(Arg, Rhs);
 replace(_Exp) ->
   continue.
 
-apply_args({op, _Loc, ?OP, A, E}, Exp) ->
+apply_args({op, _Loc, ?OP, A, E}, Rhs) ->
   case apply_args(A, E) of
     continue -> continue;
-    [Args]   -> apply_args(Exp, [Args]);
-    Args     -> apply_args(Exp, [Args])
+    [Args]   -> apply_args(Rhs, [Args]);
+    Args     -> apply_args(Rhs, [Args])
   end;
-apply_args({cons, _Loc, _, _} = List, Exp) ->
+apply_args({cons, _Loc, _, _} = List, Rhs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- cons_to_list(List)],
-  [E]  = transform(fun replace/1, [Exp]),
+  [E]  = transform(fun replace/1, [Rhs]),
   do_apply(E, Args);
-apply_args(AArgs, Exp) when is_list(AArgs), is_list(Exp) ->
+apply_args(AArgs, Rhs) when is_list(AArgs), is_list(Rhs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
-  [E]  = transform(fun replace/1, Exp),
+  [E]  = transform(fun replace/1, Rhs),
   do_apply(E, Args);
 apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==string ->
   if is_tuple(RHS) ->

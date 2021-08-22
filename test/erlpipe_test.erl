@@ -19,6 +19,7 @@ erlpipe_test() ->
   ?assertEqual(b,       test3(3, [{1,a},{10,b}])),
   ?assertEqual(5.0,     test4(25, 5)),
   ?assertEqual(8,       test5()),
+  ?assertEqual(28,      test6()),
   ?assertEqual(1.0,     10 / min(2,3) / 5.0),
   ?assertEqual(2.0,     10 / 5),
   ?assertEqual(1,       [[1]] / hd),
@@ -66,6 +67,12 @@ test5() ->
       / ([2] ++ [_])
       / length([_])
       / ([t(2)] / f(5, [_] / h) / g).
+
+test6() ->
+  %% I.e.: 20 + length(atom_to_list(abc)) + length("ee" ++ "efg")
+  abc / atom_to_list
+      / length
+      / (20 + _ + ("ee" / (_ ++ "efg") / length)).
 
 t(A)    -> A.
 h(I)    -> I.
