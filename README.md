@@ -124,7 +124,7 @@ In this example the `S` variable gets assigned the initial state `1`, and
 the `{I, S+I}` two-elements tuple expression represents the body of the fold
 function that is passed the iteration variable `I` and the state variable `S`:
 ```erlang
-lists:mapfoldl(fun(I, S) -> S+I end, 1, L).
+lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L).
 ```
 
 ## Ternary if (`iif`)
