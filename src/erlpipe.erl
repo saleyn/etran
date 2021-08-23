@@ -2,8 +2,17 @@
 %%%-----------------------------------------------------------------------------
 %%% @doc Erlang pipeline parse transform
 %%%
+%%% This transform implements a parser syntax extension that enables application
+%%% of cascading function calls using the `/' operator.
+%%%
+%%% Successive function calls get passed the result of evaluation of the
+%%% previous function, creating a pipeline of calls similarly how it's done in
+%%% Linux and Elixir.
+%%%
 %%% When using this as a parse transform, include the `{parse_transform,erlpipe}'
-%%% compiler option.  In this case the following code transforms will be done:
+%%% compiler option.
+%%%
+%%% The following examples illustrate the work of the transform, in which:
 %%% ```
 %%% test1(A)   -> [A]   / fun1 / mod:fun2 / fun3.
 %%% test2(A,B) -> [A,B] / fun4 / fun5() / io:format("~p\n", [_]).
@@ -97,7 +106,7 @@ do_apply({Op, Loc, Fun, Args} = LHS, RHS) when Op =:= call; Op =:= lc ->
   [NewLHS] = transform(fun(Forms) -> substitute(RHS, Forms) end, [LHS]),
   case NewLHS of
     LHS ->
-      {Op, Loc, Fun, [hd(RHS) | Args]};
+      {Op, Loc, Fun, RHS ++ Args};
     ResLHS ->
       ResLHS
   end;

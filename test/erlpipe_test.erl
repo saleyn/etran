@@ -20,6 +20,7 @@ erlpipe_test() ->
   ?assertEqual(5.0,     test4(25, 5)),
   ?assertEqual(8,       test5()),
   ?assertEqual(28,      test6()),
+  %?assertEqual(11,      [1, 2, 3] / fun1 / fun2 / fun3),
   ?assertEqual(1.0,     10 / min(2,3) / 5.0),
   ?assertEqual(2.0,     10 / 5),
   ?assertEqual(1,       [[1]] / hd),
@@ -81,5 +82,9 @@ g(I, J) -> I+J.
 
 ttt(A, _B) ->
   A.
+
+%fun1(A, B, C) -> [A+B, B+C].
+%fun2(A, B)    -> [1, 2, A+B].
+%fun3(A, B, C) -> A+B+C.
 
 -endif.

@@ -30,10 +30,6 @@ the RHS expression.
 It transforms code from:
 
 ```erlang
-print(L) when is_list(L) ->
-  [lists:split(3, L)]  / element(1, _)          %% Function calls must be enclosed in `[...]`
-                       / io:format("~s\n", [_]).
-
 test1(Arg1, Arg2, Arg3) ->
   [Arg1, Arg2]                                  %% Variables must be enclosed in `[...]`
   / fun1
@@ -44,13 +40,19 @@ test1(Arg1, Arg2, Arg3) ->
   / fun6([1,2,3], _, other_param)
   / fun7.
 
+print(L) when is_list(L) ->
+  [lists:split(3, L)]                           %% Function calls must be enclosed in `[...]`
+  / element(1, _)
+  / binary_to_list
+  / io:format("~s\n", [_]).
+
 test2() ->
   3       = "abc"      / length,                %% Strings  can be passed to '/' as is
   "abc"   = <<"abc">>  / binary_to_list,        %% Binaries can be passed to '/' as is
   "1,2,3" = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
                        / [[I] || I <- _]
                        / string:join(_, ","),
-  "abc\n" = "abc"      / (_ ++ "\n"),          %% Can use operators on the right hand side
+  "abc\n" = "abc"      / (_ ++ "\n"),           %% Can use operators on the right hand side
   2.0     = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
   2       = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
 ```
@@ -58,13 +60,13 @@ test2() ->
 to the following equivalent:
 
 ```erlang
-print(L) when is_list(L) ->
-  io:format("~s\n", [element(1, lists:split(3, L))]).
-
 test1(Arg1, Arg2, Arg3) ->
   fun7(fun6([1,2,3],
             io_lib:format("~p\n", [fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))))]),
             other_param)).
+
+print(L) when is_list(L) ->
+  io:format("~s\n", [binary_to_list(element(1, lists:split(3, L)))]).
 
 test2() ->
   3       = length("abc"),
