@@ -11,7 +11,7 @@
 This library includes useful parse transforms including Elixir-like pipeline operator for
 cascading function calls.
 
-## Content
+# Content
 
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
@@ -20,7 +20,7 @@ cascading function calls.
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
-### Erlang Pipeline (`erlpipe`)
+## Erlang Pipeline (`erlpipe`)
 
 Inspired by the Elixir's `|>` pipeline operator.
 This transform makes code with cascading function calls much more readable by using the `/` as the
@@ -86,9 +86,9 @@ Yet, we subjectively believe that the choice of syntax in this implementation of
 is more succinct and elegant, and doesn't attempt to modify the meaning of the `/` operator
 for arithmetic LHS types (i.e. integers and floats).
 
-### Map-Reduce: Fold and MapFold Comprehensions (`mapreduce`)
+## Map-Reduce: Fold and MapFold Comprehensions (`mapreduce`)
 
-#### Fold Comprehension
+### Fold Comprehension
 
 To invoke the fold comprehension transform include the initial state
 assignment into a comprehension that returns a non-tuple expression:
@@ -104,7 +104,7 @@ is passed the iteration variable `I` and the state variable `S`:
 lists:foldl(fun(I, S) -> S+I end, 1, L).
 ```
 
-#### MapFold Comprehension
+### MapFold Comprehension
 
 To invoke the mapfold comprehension transform include the initial state
 assignment into a comprehension, and return a tuple expression:
@@ -120,7 +120,7 @@ function that is passed the iteration variable `I` and the state variable `S`:
 lists:mapfoldl(fun(I, S) -> S+I end, 1, L).
 ```
 
-### Ternary if (`iif`)
+## Ternary if (`iif`)
 
 This transform improves the code readability for cases that involve simple conditional tests.
 E.g.:
@@ -163,7 +163,7 @@ case L of
 end.
 ```
 
-### String transforms (`str`)
+## String transforms (`str`)
 
 This module implements a transform to stringify an Erlang term.
 
@@ -176,7 +176,7 @@ This module implements a transform to stringify an Erlang term.
 * [Github](https://github.com/saleyn/etran)
 * [Hex.pm](https://hex.pm/packages/etran)
 
-## Building and Using
+# Building and Using
 
 ```
 $ make
