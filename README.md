@@ -176,7 +176,7 @@ This module implements a transform to stringify an Erlang term.
 * [Github](https://github.com/saleyn/etran)
 * [Hex.pm](https://hex.pm/packages/etran)
 
-# Building and Using
+## Building and Using
 
 ```
 $ make
