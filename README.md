@@ -24,8 +24,11 @@ cascading function calls.
 
 Inspired by the Elixir's `|>` pipeline operator.
 This transform makes code with cascading function calls much more readable by using the `/` as the
-pipeline operator. The result of evaluation of the LHS expression is passed as an argument to
-the RHS expression.
+pipeline operator. In the `LHS / RHS / ... Last.` notation, the result of evaluation of the LHS
+expression is passed as an argument to the RHS expression. This process continues until the `Last`
+expression is evaluated.  The head element of the pipeline must be either a term to which the
+arithmetic division `/` operator cannot apply (i.e. not integers, floats, functions), or if you
+need to pass integer(s) or float(s), wrap them in a list brackets.
 
 It transforms code from:
 
@@ -47,6 +50,7 @@ print(L) when is_list(L) ->
   / io:format("~s\n", [_]).
 
 test2() ->
+  3       = abc        / atom_to_list / length, %% Atoms    can be passed to '/' as is
   3       = "abc"      / length,                %% Strings  can be passed to '/' as is
   "abc"   = <<"abc">>  / binary_to_list,        %% Binaries can be passed to '/' as is
   "1,2,3" = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
@@ -69,6 +73,7 @@ print(L) when is_list(L) ->
   io:format("~s\n", [binary_to_list(element(1, lists:split(3, L)))]).
 
 test2() ->
+  3       = length(atom_to_list(abc)),
   3       = length("abc"),
   "abc"   = binary_to_list(<<"abc">>),
   "1,2,3" = string:join([[I] || I <- tuple_to_list({$1,$2,$3})], ","),

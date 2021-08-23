@@ -5,9 +5,15 @@
 %%% This transform implements a parser syntax extension that enables application
 %%% of cascading function calls using the `/' operator.
 %%%
-%%% Successive function calls get passed the result of evaluation of the
-%%% previous function, creating a pipeline of calls similarly how it's done in
-%%% Linux and Elixir.
+%%% In the `LHS / RHS / ... Last.' notation, the result of evaluation of the LHS
+%%% expression is passed as an argument to the RHS expression. This process
+%%% continues until the `Last' expression is evaluated.  The head element of the
+%%% pipeline must be either a term to which the arithmetic division `/` operator
+%%% cannot apply (i.e. not integers, floats, functions), or if you need to pass
+%%% integer(s) or float(s), wrap them in a list brackets.
+%%%
+%%% This transfor is inspired by the similar functionality in Linux (i.e. `|'
+%%% pipe) and Elixir (`|>' pipe).
 %%%
 %%% When using this as a parse transform, include the `{parse_transform,erlpipe}'
 %%% compiler option.
@@ -22,8 +28,14 @@
 %%% test1(A)   -> fun3(mod:fun2(fun1(A))).
 %%% test2(A,B) -> io:format("~p\n", [fun5(fun4(A,B))]).
 %%% '''
-%%% For debugging the AST of the resulting transform, use `-Derlpipe_debug'
-%%% command-line option.
+%%% For debugging the AST of the resulting transform, pass the following
+%%% options to the `erlc' compiler:
+%%% <dl>
+%%% <li>`-Derlpipe_orig' - print the original AST before the transform</li>
+%%% <li>`-Derlpipe_ast'  - print the transformed AST</li>
+%%% <li>`-Derlpipe_src'  - print the resulting source code after the transform</li>
+%%% </dl>
+%%%
 %%% @author Serge Aleynikov <saleyn(at)gmail(dot)com>
 %%% @end
 %%%-----------------------------------------------------------------------------

@@ -45,9 +45,9 @@
 %%% For debugging the AST of the resulting transform, pass the following
 %%% options to the `erlc' compiler:
 %%% <dl>
-%%% <li>`-Dmapreduce_orig' - show the original AST before the transform</li>
-%%% <li>`-Dmapreduce_ast'  - show the transformed AST</li>
-%%% <li>`-Dmapreduce_src'  - show the resulting source code after the transform</li>
+%%% <li>`-Dmapreduce_orig' - print the original AST before the transform</li>
+%%% <li>`-Dmapreduce_ast'  - print the transformed AST</li>
+%%% <li>`-Dmapreduce_src'  - print the resulting source code after the transform</li>
 %%% </dl>
 %%%
 %%% @author Serge Aleynikov <saleyn(at)gmail(dot)com>
