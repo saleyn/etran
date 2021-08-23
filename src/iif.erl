@@ -9,7 +9,7 @@
 %%% compiler option.  In this case for given expressions `A',`B',`C', and `D'
 %%% the following code transforms will be done:
 %%% ```
-%%% iif(A, B, C)   -> begin V = A, if V -> B; true -> C end end
+%%% iif(A, B, C)   -> begin V = A, case V of true -> B; _ -> C end end
 %%% iif(A,B,C,D)   -> case A of B -> C; _ -> D end
 %%% nvl(A,B)       -> case A of false -> B; undefined -> B; [] -> B; _ -> A end
 %%% nvl(A,B,C)     -> case A of false -> B; undefined -> B; [] -> B; _ -> C end
