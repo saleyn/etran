@@ -22,7 +22,7 @@ test:
 	ERL_LIBS= rebar3 eunit
 
 publish:
-	rebar3 hex publish $(if $(replace),--replace)
+	rebar3 hex $(if $(replace),publish --replace,cut)
 
 debug:
 	erlc +debug_info -pa _build/default/lib/etran/ebin -o _build/default/lib/etran/ebin src/$(transform).erl
