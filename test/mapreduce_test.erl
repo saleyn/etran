@@ -26,5 +26,17 @@ fold_test() ->
   ?assertEqual(4, [S+I   || S = 0, I <- [1,2,3], I /= 2]),
   ?assertEqual(9, [S+I+J || S = 0, I <- [1,2], J <- [3,4], I /= 2]).
 
+foldl_test() ->
+  ?assertEqual([3,1], mapreduce:foldl(fun(I, V, S) ->
+                                        if (I rem 2 == 0) -> S;
+                                           true -> [V|S]
+                                        end
+                                      end, [], [1,2,3,4])),
+  ?assertEqual([1,3], mapreduce:foldr(fun(I, V, S) ->
+                                        if (I rem 2 == 0) -> S;
+                                           true -> [V|S]
+                                        end
+                                      end, [], [1,2,3,4])),
+  ok.
 
 -endif.

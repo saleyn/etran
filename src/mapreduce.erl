@@ -20,7 +20,6 @@
 %%% ```
 %%% lists:foldl(fun(I, S) -> S+I end, 1, L).
 %%% '''
-%%%
 %%% === MapFold Comprehension ===
 %%%
 %%% To invoke the mapfold comprehension transform include the initial state
@@ -77,11 +76,36 @@
 -module(mapreduce).
 
 -export([parse_transform/2]).
+-export([foldl/3, foldr/3]).
+
 -import(etran_util, [transform/2]).
 
 %% @doc parse_transform entry point
 parse_transform(AST, Options) ->
   etran_util:apply_transform(?MODULE, fun replace/1, AST, Options).
+
+%%------------------------------------------------------------------------------
+%% @doc Fold over a list by additionally passing the list's current item number
+%%      to the folding fun.  This function is similar to lists:foldl/3, except
+%%      that the fun takes the first extra integer argument.
+%% @end
+%%------------------------------------------------------------------------------
+-spec foldl(fun((Position::integer(), Item::term(), Acc::term()) -> NewAcc::term()),
+            Init::term(), list()) -> term().
+foldl(Fun, Init, List) when is_function(Fun, 3) ->
+  element(2, lists:foldl(fun(V, {I, S}) -> R = Fun(I, V, S), {I+1, R} end, {1, Init}, List)).
+
+%%------------------------------------------------------------------------------
+%% @doc Fold over a list by additionally passing the list's current item number
+%%      to the folding fun.  This function is similar to lists:foldr/3, except
+%%      that the fun takes the first extra integer argument.
+%% @end
+%%------------------------------------------------------------------------------
+-spec foldr(fun((Position::integer(), Item::term(), Acc::term()) -> NewAcc::term()),
+            Init::term(), list()) -> term().
+foldr(Fun, Init, List) when is_function(Fun, 3) ->
+  N = length(List),
+  element(2, lists:foldr(fun(V, {I, S}) -> R = Fun(I, V, S), {I-1, R} end, {N, Init}, List)).
 
 %% MapReduce transform
 %% ===================
