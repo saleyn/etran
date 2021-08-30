@@ -11,7 +11,7 @@
 This library includes useful parse transforms including Elixir-like pipeline operator for
 cascading function calls.
 
-# Content
+## Content
 
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
@@ -97,18 +97,18 @@ for arithmetic LHS types (i.e. integers and floats).
 
 ### Indexed List Comprehension
 
-Occasionally the body of the list comprehension needs to know the index
+Occasionally the body of a list comprehension needs to know the index
 of the current item in the fold.  Consider this example:
 ```erlang
 [{1,10}, {2,20}] = element(1, lists:foldmapl(fun(I, N) -> {{N, I}, N+1} end, 1, [10,20])).
 ```
-
+Here the `N` variable is tracking the index of the current item `I` in the list.
 While the same result in this specific case can be achieved with
-``lists:zip(lists:seq(1,2), [10,20])``, there is no way to have an item counter propagated
-with the list comprehension.
+`lists:zip(lists:seq(1,2), [10,20])`, in a more general case, there is no way to have
+an item counter propagated with the current list comprehension syntax.
 
-The `Indexed List Comprehension` accomplishes just that through the use of an unassigned
-variable immediately to the right of the `||`:
+The **Indexed List Comprehension** accomplishes just that through the use of an unassigned
+variable immediately to the right of the `||` operator:
 ```erlang
   [{Idx, I} || Idx, I <- L].
 %              ^^^
