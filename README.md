@@ -217,7 +217,11 @@ Example:
 
 ## Ternary if (`iif`)
 
-This transform improves the code readability for cases that involve simple conditional tests.
+This transform improves the code readability for cases that involve simple conditional
+`if/then/else` tests in the form `iif(Condition, Then, Else)`.  Since this is a parse
+transform, the `Then` and `Else` expressions are evaluated **only** if the `Condition`
+evaluates to `true` or `false` respectively.
+
 E.g.:
 
 ```erlang
