@@ -95,13 +95,41 @@ for arithmetic LHS types (i.e. integers and floats).
 
 ## Map-Reduce: Fold and MapFold Comprehensions (`mapreduce`)
 
+### Indexed List Comprehension
+
+Occasionally the body of the list comprehension needs to know the index
+of the current item in the fold.  Consider this example:
+```erlang
+[{1,10}, {2,20}] = element(1, lists:foldmapl(fun(I, N) -> {{N, I}, N+1} end, 1, [10,20])).
+```
+
+While the same result in this specific case can be achieved with
+``lists:zip(lists:seq(1,2), [10,20])``, there is no way to have an item counter propagated
+with the list comprehension.
+
+The `Indexed List Comprehension` accomplishes just that through the use of an unassigned
+variable immediately to the right of the `||`:
+```erlang
+  [{Idx, I} || Idx, I <- L].
+%              ^^^
+%               |
+%               +--- This variable becomes the index counter
+```
+Example:
+```erlang
+[{1,10}, {2,20}] = [{Idx, I} || Idx, I <- [10,20]].
+```
+
 ### Fold Comprehension
 
 To invoke the fold comprehension transform include the initial state
 assignment into a comprehension that returns a non-tuple expression:
 ```erlang
-[S+I || S = 1, I <- L].
- ^^^    ^^^^^
+  [S+I || S = 1, I <- L].
+%  ^^^    ^^^^^
+%   |          |
+%   |          +--- State variable bound to the initial value
+%   +-------------- The body of the foldl function
 ```
 
 In this example the `S` variable gets assigned the initial state `1`, and
@@ -111,13 +139,48 @@ is passed the iteration variable `I` and the state variable `S`:
 lists:foldl(fun(I, S) -> S+I end, 1, L).
 ```
 
+A fold comprehension can be combined with the indexed list comprehension
+by using this syntax:
+
+```erlang
+  [do(Idx, S+I) || Idx, S = 10, I <- L].
+%  ^^^^^^^^^^^^    ^^^  ^^^^^^
+%       |           |     |
+%       |           |     +--- State variable bound to the initial value (e.g. 10)
+%       |           +--------- The index variable bound to the initial value of 1
+%       +--------------------- The body of the foldl function can use Idx and S
+```
+
+This code is transformed to:
+```erlang
+element(2, lists:foldl(fun(I, {Idx, S}) -> {Idx+1, do(Idx, S+I)} end, {1, 10}, L)).
+```
+
+Example:
+```erlang
+33 = [S + Idx*I || Idx, S = 0, I <- [10,20]],
+
+[print(Idx, I, S) || Idx, S=0, I <- [10,20]].
+% Prints:
+%   Item#1 running sum: 10
+%   Item#2 running sum: 30
+
+print(Idx, I, S) ->
+  Res = S+I,
+  io:format("Item#~w running sum: ~w\n", [Idx, Res]),
+  Res.
+```
+
 ### MapFold Comprehension
 
 To invoke the mapfold comprehension transform include the initial state
 assignment into a comprehension, and return a tuple expression:
 ```erlang
-[{I, S+I} || S = 1, I <- L].
- ^^^^^^^^    ^^^^^
+  [{I, S+I} || S = 1, I <- L].
+%  ^^^^^^^^    ^^^^^
+%     |          |
+%     |          +--- State variable bound to the initial value
+%     +-------------- The body of the mapfoldl function
 ```
 
 In this example the `S` variable gets assigned the initial state `1`, and
@@ -125,6 +188,31 @@ the `{I, S+I}` two-elements tuple expression represents the body of the fold
 function that is passed the iteration variable `I` and the state variable `S`:
 ```erlang
 lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L).
+```
+
+A mapfold comprehension can be combined with the indexed list comprehension
+by using this syntax:
+
+```erlang
+  [{I, do(Idx, I, S)} || Idx, S = 10, I <- L].
+%  ^^^^^^^^^^^^^^^^^^    ^^^  ^^^^^^
+%           |             |     |
+%           |             |     +--- State variable bound to the initial value (e.g. 10).
+%           |             +--------- The index variable bound to the initial value of 1.
+%           +----------------------- The body of the mapfoldl function must be a 2-element
+%                                    tuple, and it can use Idx and S.
+```
+This code is transformed to:
+```erlang
+begin
+  {_V1, {_, _V2}} = lists:mapfoldl(fun(I, {Idx, S}) -> {I, {Idx+1, do(Idx, S+I)}} end, {1, 10}, L)),
+  {_V1, _V2}
+end.
+```
+
+Example:
+```erlang
+{[21,22], 33} = [{I+Idx, S + Idx*I} || Idx, S = 0, I <- [10,20]].
 ```
 
 ## Ternary if (`iif`)
