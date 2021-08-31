@@ -35,10 +35,10 @@ It transforms code from:
 ```erlang
 test1(Arg1, Arg2, Arg3) ->
   [Arg1, Arg2]                                  %% Arguments must be enclosed in `[...]`
-  / fun1
+  / fun1                                        %% In function calls parenthesis are optional
   / mod:fun2
-  / fun3()                                      %% In function calls parenthesis are optional
-  / fun4(Arg3, _)
+  / fun3()
+  / fun4(Arg3, _)                               %% '_' is the placeholder for the return value of a previous function
   / io_lib:format("~p\n", [_])
   / fun6([1,2,3], _, other_param)
   / fun7.
