@@ -183,11 +183,11 @@ print(Idx, I, S) ->
 To invoke the mapfold comprehension transform include the initial state
 assignment into a comprehension, and return a tuple expression:
 ```erlang
-  [{I, S+I} || S = 1, I <- L].
-%  ^^^^^^^^    ^^^^^
-%     |          |
-%     |          +--- State variable bound to the initial value
-%     +-------------- The body of the mapfoldl function
+  <<{I, S+I} || S = 1, I <- L>>.
+%   ^^^^^^^^    ^^^^^
+%      |          |
+%      |          +--- State variable bound to the initial value
+%      +-------------- The body of the mapfoldl function returns a 2-element tuple
 ```
 
 In this example the `S` variable gets assigned the initial state `1`, and
@@ -201,7 +201,7 @@ A mapfold comprehension can be combined with the indexed list comprehension
 by using this syntax:
 
 ```erlang
-  [{I, do(Idx, I, S)} || Idx, S = 10, I <- L].
+ <<{I, do(Idx, I, S)} || Idx, S = 10, I <- L>>.
 %  ^^^^^^^^^^^^^^^^^^    ^^^  ^^^^^^
 %           |             |     |
 %           |             |     +--- State variable bound to the initial value (e.g. 10).
@@ -219,7 +219,7 @@ end.
 
 Example:
 ```erlang
-{[21,22], 33} = [{I+Idx, S + Idx*I} || Idx, S = 0, I <- [10,20]].
+{[21,22], 33} = <<{I+Idx, S + Idx*I} || Idx, S = 0, I <- [10,20]>>.
 ```
 
 ## `iif`: Ternary if

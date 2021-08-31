@@ -146,20 +146,20 @@ foldr(Fun, Init, List) when is_function(Fun, 3) ->
 
 %% MapReduce transform
 %% ===================
-%% [{I, S+I} || S = 10, I <- L]
+%% <<{I, S+I} || S = 10, I <- L>>
 %%   Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 10, L).
-%% [{I, S+I} || N, S = 10, I <- L]
+%% <<{I, S+I} || N, S = 10, I <- L>>
 %%   Rewrite:
 %%      begin
 %%        {_V1, {_, _V2}} = lists:mapfoldl(fun(I, {N, S}) -> {I, {N+1, S+I}} end, {1, 10}, L),
 %%        {_V1, _V2}
 %%      end.
-replace({lc,Loc,{tuple, _, _} = Body,
+replace({bc,Loc,{tuple, _, _} = Body,
                 [{match,_,{var,_,_},_StateInit0}=Match | Generators]})
     when element(1, hd(Generators)) == generate ->
   replace2(Loc, Body, undefined, Match, Generators);
 
-replace({lc,Loc,{tuple, _, _} = Body,
+replace({bc,Loc,{tuple, _, _} = Body,
                 [{var,  _, V} = Var,
                  {match,_,{var,_,_},_StateInit0}=Match | Generators]})
     when is_atom(V), element(1, hd(Generators)) == generate ->
@@ -181,10 +181,10 @@ replace({lc,Loc,{tuple, _, _} = Body,
 %%   Rewrite: lists:foldl(fun(I, S) -> S+I end, 1, L).
 %% [S+I || N, S = 0, I <- L]
 %%   Rewrite: lists:foldl(fun(I, S) -> S+I end, 1, L).
-%% [{I, S+I} || S = 1, I <- L, I > 10]
+%% [S+I || S = 1, I <- L, I > 10]
 %%   Rewrite: lists:foldl(fun(I, S) -> S+I end, 1, [_I || _I <- L, _I > 10]).
-%% [{I, S+I} || S = 1, I <- L1, J <- L2]
-%%   Rewrite: lists:foldl(fun({I,J}, S) -> {I, S+I} end, 1, [ || I <- L1, J <- L2]).
+%% [S+I+J || S = 1, I <- L1, J <- L2]
+%%   Rewrite: lists:foldl(fun({I,J}, S) -> S+I+J end, 1, [{I,J} || I <- L1, J <- L2]).
 %%
 replace({lc,Loc,ResBody0,
                 [{var, _, V}=Var,
@@ -222,31 +222,31 @@ maybe_make_var({Ln,Pos}=Loc, Arg) ->
 %% MapFold Rewriting rules:
 %% ========================
 %%
-%% [{I, S+I} || S = 1, I <- L]
-%%   Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L).
-%% [{I, S+I} || S = 1, I <- L, I > 10]
-%%   Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, [_I || _I <- L, _I > 10]).
-%% [{I, S+I} || S = 1, I <- L1, J <- L2]
-%%   Rewrite: lists:mapfoldl(fun({I,J}, S) -> {I, S+I} end, 1, [ || I <- L1, J <- L2]).
+%% <<{I, S+I} || S = 1, I <- L>>
+%%    Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L).
+%% <<{I, S+I} || S = 1, I <- L, I > 10>>
+%%    Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, [_I || _I <- L, _I > 10]).
+%% <<{I, S+I} || S = 1, I <- L1, J <- L2>>
+%%    Rewrite: lists:mapfoldl(fun({I,J}, S) -> {I, S+I} end, 1, [ || I <- L1, J <- L2]).
 %%
-%% [{I, S+I} || N, S = 1, I <- L]
-%%   Rewrite:
-%%      begin
-%%        {L1, {_, V}} = lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L),
-%%        {L1, V}
-%%      end
-%% [{I, S+I} || N, S = 1, I <- L, I > 10]
-%%   Rewrite:
-%%      begin
-%%        {L1, {_, V}} = lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, [_I || _I <- L, _I > 10]),
-%%        {L1, V}
-%%      end
-%% [{I, S+I} || N, S = 1, I <- L1, J <- L2]
-%%   Rewrite:
-%%      begin
-%%        {L1, {_, V}} = lists:mapfoldl(fun({I,J}, S) -> {I, S+I} end, 1, [ || I <- L1, J <- L2]),
-%%        {L1, V}
-%%      end
+%%  <<{I, S+I} || N, S = 1, I <- L>>
+%%    Rewrite:
+%%       begin
+%%         {L1, {_, V}} = lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L),
+%%         {L1, V}
+%%       end
+%%  <<{I, S+I} || N, S = 1, I <- L, I > 10>>
+%%    Rewrite:
+%%       begin
+%%         {L1, {_, V}} = lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, [_I || _I <- L, _I > 10]),
+%%         {L1, V}
+%%       end
+%%  <<{I, S+I} || N, S = 1, I <- L1, J <- L2>>
+%%    Rewrite:
+%%       begin
+%%         {L1, {_, V}} = lists:mapfoldl(fun({I,J}, S) -> {I, S+I} end, 1, [ || I <- L1, J <- L2]),
+%%         {L1, V}
+%%       end
 replace2(Loc,{tuple,_,ResBody0}, Index, {match,_,{var,_,_}=StateVar,StateInit0}, Generators) ->
   ResBody = [hd(transform(fun replace/1, [A])) || A <- ResBody0],
   [Init]  =  transform(fun replace/1, [StateInit0]),
@@ -258,7 +258,7 @@ replace2(Loc,{tuple,_,ResBody0}, Index, {match,_,{var,_,_}=StateVar,StateInit0},
     case Gens of
       [{generate, Loc0, FunArg0, List0}] when Filters == [] ->
         % Simple case with one generator and no filters:
-        % [{I, S+I} || S = 1, I <- L]
+        % <<{I, S+I} || S = 1, I <- L>>
         {Loc0, FunArg0, List0};
       [{generate, Loc0, FunArg0, List0}] when Filters /= [] ->
         % Simple case with one generator and no filters:
@@ -270,7 +270,7 @@ replace2(Loc,{tuple,_,ResBody0}, Index, {match,_,{var,_,_}=StateVar,StateInit0},
                                [{generate, Loc0, Match, List0}| Filters]}};
       _ ->
         % More than one generator:
-        % [{I, S+I} || S = 1, I = FunArg1 <- List1, J = FunArg2 <- List2, ...]
+        % <<{I, S+I} || S = 1, I = FunArg1 <- List1, J = FunArg2 <- List2, ...>>
         % - Make a list:
         %      [{I,FunArg1,LCList1}, {J,FunArg2,LCList2}, ...]
         VarsList = lists:reverse(
@@ -280,7 +280,7 @@ replace2(Loc,{tuple,_,ResBody0}, Index, {match,_,{var,_,_}=StateVar,StateInit0},
           end, [], Gens)),
 
         % - Create a new list comprehension:
-        % [{I,J,...} || I <- L1, J <- L2, ..., Filters]
+        % <<{I,J,...} || I <- L1, J <- L2, ..., Filters>>
         Vars    = [V || {V,_,_} <- VarsList],
         ArgVars = {tuple, Loc, Vars},
         FArgs   = {tuple, Loc, [A || {_,A,_} <- VarsList]},
@@ -307,7 +307,7 @@ replace2(Loc,{tuple,_,ResBody0}, Index, {match,_,{var,_,_}=StateVar,StateInit0},
   % Finally, rewrite the call:
   case Index of
     undefined ->
-      % [{I, S+I} || S = 1, I <- L]
+      % <<{I, S+I} || S = 1, I <- L>>
       % Rewrite:
       %   lists:mapfoldl(fun(Arg, State) -> {Arg1, State1} end,
       %                  Init, _ListOfLCs = [{I,J,...} || I <- L1, J <- L2, ...])
@@ -316,7 +316,7 @@ replace2(Loc,{tuple,_,ResBody0}, Index, {match,_,{var,_,_}=StateVar,StateInit0},
 
       CallMapFoldl(FunArgs, Init, StateVar, FunBody);
     {var, {_I,_J} = VLoc,_} ->
-      % [{I, S+I} || N, S = 1, I <- L]
+      % <<{I, S+I} || N, S = 1, I <- L>>
       % Rewrite:
       %   begin
       %     {_V1, {_, _V2}} =
