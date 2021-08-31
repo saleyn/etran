@@ -20,7 +20,7 @@ cascading function calls.
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
-## Erlang Pipeline (`erlpipe`)
+## Erlang Pipe Operator (`erlpipe`)
 
 Inspired by the Elixir's `|>` pipeline operator.
 This transform makes code with cascading function calls much more readable by using the `/` as the
@@ -34,7 +34,7 @@ It transforms code from:
 
 ```erlang
 test1(Arg1, Arg2, Arg3) ->
-  [Arg1, Arg2]                                  %% Variables must be enclosed in `[...]`
+  [Arg1, Arg2]                                  %% Arguments must be enclosed in `[...]`
   / fun1
   / mod:fun2
   / fun3()                                      %% In function calls parenthesis are optional
@@ -44,7 +44,8 @@ test1(Arg1, Arg2, Arg3) ->
   / fun7.
 
 print(L) when is_list(L) ->
-  [lists:split(3, L)]                           %% Function calls must be enclosed in `[...]`
+  [3, L]                                        %% Multiple items in a list are passed as arguments to the first function
+  / lists:split
   / element(1, _)
   / binary_to_list
   / io:format("~s\n", [_]).
@@ -56,6 +57,9 @@ test2() ->
   "1,2,3" = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
                        / [[I] || I <- _]
                        / string:join(_, ","),
+  "1"     = [min(1,2)] / integer_to_list,       %% Function calls, integer and float values must be passed as a list
+  "1"     = [1]        / integer_to_list,
+  "1.0"   = [1.0]      / float_to_list(_, [{decimals,1}]),
   "abc\n" = "abc"      / (_ ++ "\n"),           %% Can use operators on the right hand side
   2.0     = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
   2       = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
@@ -77,6 +81,9 @@ test2() ->
   3       = length("abc"),
   "abc"   = binary_to_list(<<"abc">>),
   "1,2,3" = string:join([[I] || I <- tuple_to_list({$1,$2,$3})], ","),
+  "1"     = integer_to_list(min(1,2)),
+  "1"     = integer_to_list(1),
+  "1.0"   = float_to_list(1.0, [{decimals,1}]),
   "abc\n" = "abc" ++ "\n",
   2.0     = 4.0 / max(1.0, 2.0),
   2       = 4   / max(1, 2).
