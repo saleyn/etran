@@ -17,6 +17,7 @@ defarg_test() ->
   ?assertEqual(3,     a()),
   ?assertEqual(9,     a(7)),
   ?assertEqual(10,    a(6,4)),
+  ?assertEqual(3,     b()),
   ?assertEqual(7.0,   c()),
   ?assertEqual(9,     d()),
   ?assertEqual(5,     d(abc, [1,2])),
@@ -24,6 +25,9 @@ defarg_test() ->
 
 a(A / 1, B / 2) ->
   A+B.
+
+b(A / #{}, B / <<>>) ->
+  maps:get(x, A, 3) + byte_size(B).
 
 c(A / (10*2-15), B / (64 / 32)) ->
   A + B.
