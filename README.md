@@ -203,7 +203,7 @@ Example:
 ```erlang
 33 = [S + Idx*I || Idx, S = 0, I <- [10,20]],
 
-[print(Idx, I, S) || Idx, S=0, I <- [10,20]].
+30 = [print(Idx, I, S) || Idx, S=0, I <- [10,20]].
 % Prints:
 %   Item#1 running sum: 10
 %   Item#2 running sum: 30
