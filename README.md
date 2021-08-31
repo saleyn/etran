@@ -16,7 +16,7 @@ cascading function calls.
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | erlpipe               | Elixir-like pipeline operator for Erlang                                             |
-| foldcomp              | Fold Comprehension and Indexed List Comprehension                                    |
+| listcomp              | Fold Comprehension and Indexed List Comprehension                                    |
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
@@ -100,7 +100,7 @@ Yet, we subjectively believe that the choice of syntax in this implementation of
 is more succinct and elegant, and doesn't attempt to modify the meaning of the `/` operator
 for arithmetic LHS types (i.e. integers and floats).
 
-## `foldcomp`: Fold and Indexed List Comprehensions
+## `listcomp`: Fold and Indexed List Comprehensions
 
 ### Indexed List Comprehension
 
