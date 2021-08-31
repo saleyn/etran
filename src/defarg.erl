@@ -68,7 +68,8 @@ replace([], _Mod, Exports, Acc) ->
   Res = lists:reverse(Acc),
   {HeadAST, [{attribute, Loc, _, _} = ModAST|TailAST]} =
     lists:splitwith(fun({attribute, _, module, _}) -> false; (_) -> true end, Res),
-  HeadAST ++ [ModAST, {attribute, Loc, export, Exports}] ++ TailAST;
+  AddExports = [{attribute, Loc, export, Exp} || Exp <- lists:reverse(Exports)],
+  HeadAST ++ [ModAST] ++ AddExports ++ TailAST;
 
 replace([{attribute,_,module,Mod}=H|T], _, Exports, Acc) ->
   replace(T, Mod, Exports, [H|Acc]);
@@ -94,7 +95,7 @@ replace([{function, Loc, Fun, Arity, [{clause, CLoc, Args, Guards, Body}]}=H|T],
                           [get(key), Fun, Arity]))),
       %% Add new exports, e.g.: -export([f/2]).
       N = Arity - length(DefArgs),
-      NewExports = Exports ++ [{Fun,I} || I <- lists:seq(N, Arity-1)],
+      NewExports = [[{Fun,I} || I <- lists:seq(N, Arity-1)] | Exports],
 
       LastClause = {function, Loc, Fun, Arity,
                      [{clause, CLoc, FrontArgs ++ [A || {A,_} <- DefArgs], Guards, Body}]},
