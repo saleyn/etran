@@ -19,7 +19,7 @@ defarg_test() ->
   ?assertEqual(10,    a(6,4)),
   ?assertEqual(7.0,   c()),
   ?assertEqual(9,     d()),
-  ?assertEqual(5,     d(abc, [12])),
+  ?assertEqual(5,     d(abc, [1,2])),
   ok.
 
 a(A / 1, B / 2) ->
