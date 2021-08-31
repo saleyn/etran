@@ -15,10 +15,46 @@ cascading function calls.
 
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
+| defarg                | Support default argument values in Erlang functions                                  |
 | erlpipe               | Elixir-like pipeline operator for Erlang                                             |
 | listcomp              | Fold Comprehension and Indexed List Comprehension                                    |
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
+
+## `defarg`: Support default argument values in Erlang functions
+
+Presently the Erlang syntax doesn't allow function arguments to have default
+parameters.  Consequently a developer needs to replicate the function
+definition multiple times passing constant defaults to some parameters of
+functions.
+
+This parse transform addresses this shortcoming by extending the syntax
+of function definitions at the top level in a module to have a default
+expression such that for `A / Default' argument the `Default' will be
+used if the function is called in code without that argument.
+
+```
+-export([t/2]).
+
+test(A / 10, B / 20) ->
+  A + B.
+'''
+The code above is transformed to:
+```
+-export([t/2]).
+-export([t/0, t/1]).
+
+test()    -> test(10);
+test(A)   -> test(A, 20);
+test(A,B) -> A+B.
+'''
+
+NOTE: The default arguments should be constant expressions.  Function calls in default
+arguments are not supported!
+```
+test(A / erlang:timestamp()) ->     %% !!! Bad syntax
+  ...
+```
 
 ## `erlpipe`: Erlang Pipe Operator
 

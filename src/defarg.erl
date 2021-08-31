@@ -2,7 +2,7 @@
 %%%-----------------------------------------------------------------------------
 %%% @doc Erlang parse transform for permitting default arguments in functions
 %%%
-%%% Presently the Erlang sytax doesn't allow function arguments to have default
+%%% Presently the Erlang syntax doesn't allow function arguments to have default
 %%% parameters.  Consequently a developer needs to replicate the function
 %%% definition multiple times passing constant defaults to some parameters of
 %%% functions.
