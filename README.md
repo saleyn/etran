@@ -134,9 +134,9 @@ assignment into a comprehension that returns a non-tuple expression:
 ```erlang
   [S+I || S = 1, I <- L].
 %  ^^^    ^^^^^
-%   |          |
-%   |          +--- State variable bound to the initial value
-%   +-------------- The body of the foldl function
+%   |       |
+%   |       +--- State variable bound to the initial value
+%   +----------- The body of the foldl function
 ```
 
 In this example the `S` variable gets assigned the initial state `1`, and
