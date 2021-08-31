@@ -55,33 +55,17 @@
 %%% lists:foldl(fun(
 %%% ```
 %%%
-%%% === MapFold Comprehension ===
-%%%
-%%% To invoke the mapfold comprehension transform include the initial state
-%%% assignment into a comprehension, and return a tuple expression:
-%%% ```
-%%% [{I, S+I} || S = 1, I <- L].
-%%%  ^^^^^^^^    ^^^^^
-%%% '''
-%%%
-%%% In this example the `S' variable gets assigned the initial state `1', and
-%%% the `{I, S+I}' two-elements tuple expression represents the body of the fold
-%%% function that is passed the iteration variable `I' and the state variable `S':
-%%% ```
-%%% lists:mapfoldl(fun(I, S) -> S+I end, 1, L).
-%%% '''
-%%%
 %%% == Compilation ==
 %%%
 %%% When using this as a parse transform, include the
-%%% `{parse_transform,mapreduce}' compiler option.
+%%% `{parse_transform,listcomp}' compiler option.
 %%%
 %%% For debugging the AST of the resulting transform, pass the following
 %%% options to the `erlc' compiler:
 %%% <dl>
-%%% <li>`-Dmapreduce_orig' - print the original AST before the transform</li>
-%%% <li>`-Dmapreduce_ast'  - print the transformed AST</li>
-%%% <li>`-Dmapreduce_src'  - print the resulting source code after the transform</li>
+%%% <li>`-Dlistcomp_orig' - print the original AST before the transform</li>
+%%% <li>`-Dlistcomp_ast'  - print the transformed AST</li>
+%%% <li>`-Dlistcomp_src'  - print the resulting source code after the transform</li>
 %%% </dl>
 %%%
 %%% @author Serge Aleynikov <saleyn(at)gmail(dot)com>
@@ -108,7 +92,7 @@
 %%% TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 %%% SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 %%%-----------------------------------------------------------------------------
--module(mapreduce).
+-module(listcomp).
 
 -export([parse_transform/2]).
 -export([foldl/3, foldr/3]).
@@ -144,27 +128,6 @@ foldr(Fun, Init, List) when is_function(Fun, 3) ->
   N = length(List),
   element(2, lists:foldr(fun(V, {I, S}) -> R = Fun(V, I, S), {I-1, R} end, {N, Init}, List)).
 
-%% MapReduce transform
-%% ===================
-%% <<{I, S+I} || S = 10, I <- L>>
-%%   Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 10, L).
-%% <<{I, S+I} || N, S = 10, I <- L>>
-%%   Rewrite:
-%%      begin
-%%        {_V1, {_, _V2}} = lists:mapfoldl(fun(I, {N, S}) -> {I, {N+1, S+I}} end, {1, 10}, L),
-%%        {_V1, _V2}
-%%      end.
-replace({bc,Loc,{tuple, _, _} = Body,
-                [{match,_,{var,_,_},_StateInit0}=Match | Generators]})
-    when element(1, hd(Generators)) == generate ->
-  replace2(Loc, Body, undefined, Match, Generators);
-
-replace({bc,Loc,{tuple, _, _} = Body,
-                [{var,  _, V} = Var,
-                 {match,_,{var,_,_},_StateInit0}=Match | Generators]})
-    when is_atom(V), element(1, hd(Generators)) == generate ->
-  replace2(Loc, Body, Var, Match, Generators);
-
 %% Fold Transform
 %% ==============
 %% Example:
@@ -192,13 +155,13 @@ replace({lc,Loc,ResBody0,
     when is_atom(V)
        , element(1, ResBody0) /= tuple
        , element(1, hd(Generators)) == generate ->
-  replace3(Loc, ResBody0, Var, Match, Generators);
+  replace2(Loc, ResBody0, Var, Match, Generators);
 
 replace({lc,Loc,ResBody0,
                 [{match,_,{var,_,_},_StateInit0}=Match | Generators]})
     when element(1, ResBody0) /= tuple
        , element(1, hd(Generators)) == generate ->
-  replace3(Loc, ResBody0, undefined, Match, Generators);
+  replace2(Loc, ResBody0, undefined, Match, Generators);
 
 %% Indexed list comprehension
 %% ==========================
@@ -207,7 +170,7 @@ replace({lc,Loc,ResBody0,
 replace({lc,Loc,ResBody0, [{var, _, V}=Var | Generators]})
     when is_atom(V)
        , element(1, hd(Generators)) == generate ->
-  replace3(Loc, ResBody0, Var, undefined, Generators);
+  replace2(Loc, ResBody0, Var, undefined, Generators);
 
 replace(_Exp) ->
   continue.
@@ -219,141 +182,7 @@ maybe_make_var({Ln,Pos}=Loc, Arg) ->
   Match = {match, Loc, Var, Arg},
   {Var, Match}.
 
-%% MapFold Rewriting rules:
-%% ========================
-%%
-%% <<{I, S+I} || S = 1, I <- L>>
-%%    Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L).
-%% <<{I, S+I} || S = 1, I <- L, I > 10>>
-%%    Rewrite: lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, [_I || _I <- L, _I > 10]).
-%% <<{I, S+I} || S = 1, I <- L1, J <- L2>>
-%%    Rewrite: lists:mapfoldl(fun({I,J}, S) -> {I, S+I} end, 1, [ || I <- L1, J <- L2]).
-%%
-%%  <<{I, S+I} || N, S = 1, I <- L>>
-%%    Rewrite:
-%%       begin
-%%         {L1, {_, V}} = lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L),
-%%         {L1, V}
-%%       end
-%%  <<{I, S+I} || N, S = 1, I <- L, I > 10>>
-%%    Rewrite:
-%%       begin
-%%         {L1, {_, V}} = lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, [_I || _I <- L, _I > 10]),
-%%         {L1, V}
-%%       end
-%%  <<{I, S+I} || N, S = 1, I <- L1, J <- L2>>
-%%    Rewrite:
-%%       begin
-%%         {L1, {_, V}} = lists:mapfoldl(fun({I,J}, S) -> {I, S+I} end, 1, [ || I <- L1, J <- L2]),
-%%         {L1, V}
-%%       end
-replace2(Loc,{tuple,_,ResBody0}, Index, {match,_,{var,_,_}=StateVar,StateInit0}, Generators) ->
-  ResBody = [hd(transform(fun replace/1, [A])) || A <- ResBody0],
-  [Init]  =  transform(fun replace/1, [StateInit0]),
-
-  % Split generators from filters
-  {Gens, Filters} =
-    lists:splitwith(fun(G) -> element(1, G) == generate end, Generators),
-  {GLoc, FunArgs, ListOfLCs} =
-    case Gens of
-      [{generate, Loc0, FunArg0, List0}] when Filters == [] ->
-        % Simple case with one generator and no filters:
-        % <<{I, S+I} || S = 1, I <- L>>
-        {Loc0, FunArg0, List0};
-      [{generate, Loc0, FunArg0, List0}] when Filters /= [] ->
-        % Simple case with one generator and no filters:
-        %   [{I, S+I} || S = 1, {I,_} <- L, I > 1, I < 10]
-        % Convert the comprehension with filter into:
-        %   lists:mapfoldl(fun({I,_}, S) -> {I,S+I} end, 1, [_V || _V = {I,_} <- L, I > 1, I < 10])
-        {Var,Match} = maybe_make_var(Loc0, FunArg0),
-        {Loc0, FunArg0, {lc, Loc0, Var,
-                               [{generate, Loc0, Match, List0}| Filters]}};
-      _ ->
-        % More than one generator:
-        % <<{I, S+I} || S = 1, I = FunArg1 <- List1, J = FunArg2 <- List2, ...>>
-        % - Make a list:
-        %      [{I,FunArg1,LCList1}, {J,FunArg2,LCList2}, ...]
-        VarsList = lists:reverse(
-          lists:foldl(fun({generate, GLoc1, FunArg0, List0}, ALists) ->
-            {Var,Match} = maybe_make_var(GLoc1, FunArg0),
-            [{Var, Match, List0}|ALists]
-          end, [], Gens)),
-
-        % - Create a new list comprehension:
-        % <<{I,J,...} || I <- L1, J <- L2, ..., Filters>>
-        Vars    = [V || {V,_,_} <- VarsList],
-        ArgVars = {tuple, Loc, Vars},
-        FArgs   = {tuple, Loc, [A || {_,A,_} <- VarsList]},
-        ListLCs = {lc, Loc, ArgVars,
-                      [{generate, GLoc, Match, LList}
-                       || {{var,GLoc,_}, Match, LList} <- VarsList] ++ Filters},
-        {Loc, FArgs, ListLCs}
-    end,
-
-  CallMapFoldl = fun(Args, InitForm, StateForm, FunBodyForm) ->
-    {call, GLoc,
-      {remote,GLoc,{atom,GLoc,lists},{atom,GLoc,mapfoldl}},
-      [{'fun', GLoc,
-        {clauses,
-         [{clause, Loc,
-           [Args, StateForm],    % The fun has 2 arguments: ({I,J, ...}, S) -> ...
-           [],                   % No guards
-           [FunBodyForm]         % Body
-          }]}},
-       InitForm,
-       ListOfLCs]}
-  end,
-
-  % Finally, rewrite the call:
-  case Index of
-    undefined ->
-      % <<{I, S+I} || S = 1, I <- L>>
-      % Rewrite:
-      %   lists:mapfoldl(fun(Arg, State) -> {Arg1, State1} end,
-      %                  Init, _ListOfLCs = [{I,J,...} || I <- L1, J <- L2, ...])
-
-      FunBody = {tuple, Loc, ResBody}, % The body of the mapfold's fun is a tuple:
-
-      CallMapFoldl(FunArgs, Init, StateVar, FunBody);
-    {var, {_I,_J} = VLoc,_} ->
-      % <<{I, S+I} || N, S = 1, I <- L>>
-      % Rewrite:
-      %   begin
-      %     {_V1, {_, _V2}} =
-      %       lists:mapfoldl(fun(Arg, {I, State}) -> {Arg1, {I+1, State1}} end,
-      %                      {1, Init},
-      %                      _ListOfLCs = [{I,J,...} || I <- L1, J <- L2, ...]),
-      %     {_V1, _V2}
-      %   end
-      Init0  = {tuple, VLoc, [{integer, VLoc, 1}, Init]},
-      State0 = {tuple, VLoc, [Index, StateVar]},
-      % Replace the last element of the ResBody with the tuple containing
-      % an increment of the index and that last element:
-      {BodyH, BodyT} = lists:split(length(ResBody)-1, ResBody),
-      NBody  = BodyH ++ [{tuple, VLoc, [{op, VLoc, '+', Index, {integer, VLoc, 1}}] ++ BodyT}],
-      FBody  = {tuple, VLoc, NBody},
-      Sfx    = integer_to_list(_I) ++ "_" ++ integer_to_list(_J),
-      V1     = {var, GLoc, list_to_atom("_V1@" ++ Sfx)},
-      V2     = {var, GLoc, list_to_atom("_V2@" ++ Sfx)},
-      {block, GLoc, [
-        {match, GLoc, {tuple, GLoc, [V1, {tuple, GLoc, [{var, GLoc, '_'}, V2]}]},
-                      CallMapFoldl(FunArgs, Init0, State0, FBody)},
-        {tuple, GLoc, [V1, V2]}
-      ]}
-  end.
-
-%% Fold Comprehension rules
-%% ========================
-%%
-%% [S+I || S = 0, I <- L]
-%%   Rewrite: lists:foldl(fun(I, S) -> S+I end, 0, L).
-%% [S+I || S = 1, I <- L1, J <- L2]
-%%   Rewrite: lists:foldl(fun({I,J}, S) -> {I, S+I} end, 1, [{I,J} || I <- L1, J <- L2]).
-%%
-%% [I || N, I <- L]
-%%   Rewrite: element(1, lists:mapfoldl(fun(I, N) -> {I, N+1} end, 1, L)).
-
-replace3(Loc, ResBody0, Index, Match, Generators) ->
+replace2(Loc, ResBody0, Index, Match, Generators) ->
   [FunBody] = transform(fun replace/1, [ResBody0]),
   {Init,StateVar} =
     case {Index, Match} of

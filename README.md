@@ -16,7 +16,7 @@ cascading function calls.
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | erlpipe               | Elixir-like pipeline operator for Erlang                                             |
-| mapreduce             | MapReduce: Fold and FoldMap Comprehension, Indexed List Comprehension                |
+| foldcomp              | Fold Comprehension and Indexed List Comprehension                                    |
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
@@ -100,7 +100,7 @@ Yet, we subjectively believe that the choice of syntax in this implementation of
 is more succinct and elegant, and doesn't attempt to modify the meaning of the `/` operator
 for arithmetic LHS types (i.e. integers and floats).
 
-## `mapreduce`: Fold, MapFold, and Indexed List Comprehensions
+## `foldcomp`: Fold and Indexed List Comprehensions
 
 ### Indexed List Comprehension
 
@@ -176,50 +176,6 @@ print(Idx, I, S) ->
   Res = S+I,
   io:format("Item#~w running sum: ~w\n", [Idx, Res]),
   Res.
-```
-
-### MapFold Comprehension
-
-To invoke the mapfold comprehension transform include the initial state
-assignment into a comprehension, and return a tuple expression:
-```erlang
-  <<{I, S+I} || S = 1, I <- L>>.
-%   ^^^^^^^^    ^^^^^
-%      |          |
-%      |          +--- State variable bound to the initial value
-%      +-------------- The body of the mapfoldl function returns a 2-element tuple
-```
-
-In this example the `S` variable gets assigned the initial state `1`, and
-the `{I, S+I}` two-elements tuple expression represents the body of the fold
-function that is passed the iteration variable `I` and the state variable `S`:
-```erlang
-lists:mapfoldl(fun(I, S) -> {I, S+I} end, 1, L).
-```
-
-A mapfold comprehension can be combined with the indexed list comprehension
-by using this syntax:
-
-```erlang
- <<{I, do(Idx, I, S)} || Idx, S = 10, I <- L>>.
-%  ^^^^^^^^^^^^^^^^^^    ^^^  ^^^^^^
-%           |             |     |
-%           |             |     +--- State variable bound to the initial value (e.g. 10).
-%           |             +--------- The index variable bound to the initial value of 1.
-%           +----------------------- The body of the mapfoldl function must be a 2-element
-%                                    tuple, and it can use Idx and S.
-```
-This code is transformed to:
-```erlang
-begin
-  {_V1, {_, _V2}} = lists:mapfoldl(fun(I, {Idx, S}) -> {I, {Idx+1, do(Idx, S+I)}} end, {1, 10}, L)),
-  {_V1, _V2}
-end.
-```
-
-Example:
-```erlang
-{[21,22], 33} = <<{I+Idx, S + Idx*I} || Idx, S = 0, I <- [10,20]>>.
 ```
 
 ## `iif`: Ternary if
