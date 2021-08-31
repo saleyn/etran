@@ -299,7 +299,7 @@ command-line option: `+'{parse_transform, etran}'`.
 erlc +debug_info +'{parse_transform, etran}' -o ebin YourModule.erl
 ```
 
-If you are using `rebar3` to build your project, than add to `rebar.config`:
+If you are using `rebar3` to build your project, then add to `rebar.config`:
 ```
 {erl_opts, [debug_info, {parse_transform, etran}]}.
 ```
