@@ -33,25 +33,25 @@ of function definitions at the top level in a module to have a default
 expression such that for `A / Default' argument the `Default' will be
 used if the function is called in code without that argument.
 
-```
+```erlang
 -export([t/2]).
 
 test(A / 10, B / 20) ->
   A + B.
-'''
-The code above is transformed to:
 ```
+The code above is transformed to:
+```erlang
 -export([t/2]).
 -export([t/0, t/1]).
 
 test()    -> test(10);
 test(A)   -> test(A, 20);
 test(A,B) -> A+B.
-'''
+```
 
 NOTE: The default arguments should be constant expressions.  Function calls in default
 arguments are not supported!
-```
+```erlang
 test(A / erlang:timestamp()) ->     %% !!! Bad syntax
   ...
 ```
