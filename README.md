@@ -50,7 +50,7 @@ test(A,B) -> A+B.
 ```
 
 The arguments with default values must be at the end of the argument list:
-```
+```erlang
 test(A, B, C / 1) ->    %% This is valid
   ...
 
