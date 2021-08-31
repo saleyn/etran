@@ -25,7 +25,7 @@
 %%% SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 %%%-----------------------------------------------------------------------------
 -module(etran_util).
--export([transform/2, transform/3, apply_transform/4]).
+-export([transform/2, transform/3, apply_transform/4, process/4]).
 -export([parse_options/2, debug_options/2, source_forms/2]).
 
 %%------------------------------------------------------------------------------
@@ -94,16 +94,21 @@ transform2(_, F, State) ->
 apply_transform(Module, Fun, AST, Options) when is_atom(Module)
                                               , is_function(Fun, 1)
                                               , is_list(Options) ->
-  M = atom_to_list(Module),
-  DbgOrig = list_to_atom(M ++ "_orig"),
-  DbgAST  = list_to_atom(M ++ "_ast"),
-  DbgSrc  = list_to_atom(M ++ "_src"),
-  [OrigAST, ResAST, SrcAST] =
-    parse_options([DbgOrig, DbgAST, DbgSrc], Options),
+  process(Module, fun(Ast) -> transform(Fun, Ast) end, AST, Options).
 
-  OrigAST andalso io:format(">>> Before ~s:\n  ~p~n", [M, AST]),
-  Transformed   = transform(Fun, AST),
-  ResAST  andalso io:format(">>> After ~s:  ~p~n", [M, Transformed]),
+%%------------------------------------------------------------------------------
+%% @doc Call `Fun' for the AST and optionally print debug info
+%% @end
+%%------------------------------------------------------------------------------
+process(Module, Fun, AST, Options) when is_atom(Module)
+                                      , is_function(Fun, 1)
+                                      , is_list(Options) ->
+  #{orig := OrigAST, ast := ResAST, src := SrcAST} =
+    debug_options(Module, Options),
+
+  OrigAST andalso io:format(">>> Before ~s:\n  ~p~n", [Module, AST]),
+  Transformed   = Fun(AST),
+  ResAST  andalso io:format(">>> After ~s:  ~p~n", [Module, Transformed]),
   SrcAST  andalso source_forms(Transformed,
                     [print, {format, ">>> Resulting Source:\n  ~s~n"}]),
   Transformed.
