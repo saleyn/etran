@@ -69,25 +69,28 @@
 
 -export([parse_transform/2]).
 
--import(etran_util, [transform/2]).
-
 %% @doc parse_transform entry point
 parse_transform(AST, Options) ->
   etran_util:process(?MODULE,
-                     fun(Ast) -> replace(Ast, undefined, [], []) end,
+                     fun(Ast) -> replace(Ast) end,
                      AST, Options).
 
-replace([], _Mod, Exports, Acc) ->
+replace(AST) ->
+  ModExports = lists:sort(lists:append([Exp || {attribute, _, export, Exp} <- AST])),
+  replace(AST, undefined, [], ModExports, []).
+
+replace([], _Mod, Exports, _ModExports, Acc) ->
   Res = lists:reverse(Acc),
   {HeadAST, [{attribute, Loc, _, _} = ModAST|TailAST]} =
     lists:splitwith(fun({attribute, _, module, _}) -> false; (_) -> true end, Res),
   AddExports = [{attribute, Loc, export, Exp} || Exp <- lists:reverse(Exports)],
   HeadAST ++ [ModAST] ++ AddExports ++ TailAST;
 
-replace([{attribute,_,module,Mod}=H|T], _, Exports, Acc) ->
-  replace(T, Mod, Exports, [H|Acc]);
+replace([{attribute,_,module,Mod}=H|T], _, Exports, ModExports, Acc) ->
+  replace(T, Mod, Exports, ModExports, [H|Acc]);
 
-replace([{function, Loc, Fun, Arity, [{clause, CLoc, Args, Guards, Body}]}=H|T], Mod, Exports, Acc) ->
+replace([{function, Loc, Fun, Arity, [{clause, CLoc, Args, Guards, Body}]}=H|T],
+        Mod, Exports, ModExports, Acc) ->
   {RevDef, RevRestArgs} =
     lists:splitwith(
       fun({op, _, '/', _Arg, _Def}) -> true;
@@ -99,7 +102,7 @@ replace([{function, Loc, Fun, Arity, [{clause, CLoc, Args, Guards, Body}]}=H|T],
 
   case DefArgs of
     [] ->
-      replace(T, Mod, Exports, [H|Acc]);
+      replace(T, Mod, Exports, ModExports, [H|Acc]);
     _ ->
       lists:filter(fun({op, _, '/', _A, _D}) -> true; (_) -> false end, FrontArgs) /= []
         andalso throw(lists:flatten(
@@ -108,7 +111,10 @@ replace([{function, Loc, Fun, Arity, [{clause, CLoc, Args, Guards, Body}]}=H|T],
                           [get(key), Fun, Arity]))),
       %% Add new exports, e.g.: -export([f/2]).
       N = Arity - length(DefArgs),
-      NewExports = [[{Fun,I} || I <- lists:seq(N, Arity-1)] | Exports],
+      NewExports = case lists:member({Fun,Arity}, ModExports) of
+                     true  -> [[{Fun,I} || I <- lists:seq(N, Arity-1)] | Exports];
+                     false -> Exports
+                   end,
 
       LastClause = {function, Loc, Fun, Arity,
                      [{clause, CLoc, FrontArgs ++ [A || {A,_} <- DefArgs], Guards, Body}]},
@@ -121,8 +127,8 @@ replace([{function, Loc, Fun, Arity, [{clause, CLoc, Args, Guards, Body}]}=H|T],
                       {Front ++ [A], ArityN+1, Acc2}
                     end, {FrontArgs, N, []}, DefArgs)),
 
-      replace(T, Mod, NewExports, [LastClause | AddClauses] ++ Acc)
+      replace(T, Mod, NewExports, ModExports, [LastClause | AddClauses] ++ Acc)
   end;
 
-replace([H|T], Mod, Exports, Acc) ->
-  replace(T, Mod, Exports, [H|Acc]).
+replace([H|T], Mod, Exports, ModExports, Acc) ->
+  replace(T, Mod, Exports, ModExports, [H|Acc]).
