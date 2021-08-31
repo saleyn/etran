@@ -28,6 +28,19 @@
 %%% test(A,B) -> A+B.
 %%% '''
 %%%
+%%% The arguments with default values must be at the end of the argument list:
+%%% ```
+%%% test(A, B, C / 1) ->    %% This is valid
+%%%   ...
+%%%
+%%% test(A / 1, B, C) ->    %% This is invalid
+%%%   ...
+%%% '''
+%%%
+%%% Default arguments must be constants or arithmetic expressions.  Function
+%%% calls are not supported as default arguments due to the limitations of the
+%%% Erlang parser.
+%%%
 %%% @author Serge Aleynikov <saleyn(at)gmail(dot)com>
 %%% @end
 %%%-----------------------------------------------------------------------------

@@ -49,6 +49,15 @@ test(A)   -> test(A, 20);
 test(A,B) -> A+B.
 ```
 
+The arguments with default values must be at the end of the argument list:
+```
+test(A, B, C / 1) ->    %% This is valid
+  ...
+
+test(A / 1, B, C) ->    %% This is invalid
+  ...
+```
+
 NOTE: The default arguments should be constant expressions.  Function calls in default
 arguments are not supported!
 ```erlang
