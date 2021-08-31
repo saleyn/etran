@@ -16,7 +16,7 @@ cascading function calls.
 | Module                | Description                                                                          |
 | --------------------- | ------------------------------------------------------------------------------------ |
 | erlpipe               | Elixir-like pipeline operator for Erlang                                             |
-| mapreduce             | MapReduce: Fold Comprehension and FoldMap Comprehension                              |
+| mapreduce             | MapReduce: Fold and FoldMap Comprehension, Indexed List Comprehension                |
 | iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
