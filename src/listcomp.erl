@@ -42,18 +42,19 @@
 %%%
 %%% Fold comprehension can be combined with the indexed list comprehension:
 %%% ```
-%%% [running_sum(I, N, S+N) || I, S=1, N <- L].
+%%% [running_sum(I, N, S+N) || I, S=5, N <- L].
 %%%
 %%% running_sum(I, N, RunningSum) ->
 %%%   io:format("Rec#~w: ~p (~w)\n", [I, N, RunningSum]),
 %%%   S.
-%%% ```
+%%% '''
 %%%
 %%% In this case the definition of the indexed fold comprehension would be
 %%% transformed to:
 %%% ```
-%%% lists:foldl(fun(
-%%% ```
+%%% element(2, lists:foldl(fun(I, {N, S}) ->
+%%%   running_sum(I, N, S), {N+1, S+N} end, {1,5}, L)),
+%%% '''
 %%%
 %%% == Compilation ==
 %%%
