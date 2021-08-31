@@ -17,7 +17,7 @@ defarg_test() ->
   ?assertEqual(3,     a()),
   ?assertEqual(9,     a(7)),
   ?assertEqual(10,    a(6,4)),
-  ?assertEqual(7,     c()),
+  ?assertEqual(7.0,   c()),
   ?assertEqual(9,     d()),
   ?assertEqual(5,     d(abc, [12])),
   ok.
