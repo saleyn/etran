@@ -31,11 +31,12 @@
 
 %% @doc parse_transform entry point
 parse_transform(AST, Options) ->
-  A1 = erlpipe:parse_transform(AST, Options),
-  A2 = iif:parse_transform(A1, Options),
-  A3 = listcomp:parse_transform(A2, Options),
-  A4 = str:parse_transform(A3, Options),
-  A5 = gin_transform(A4, Options),
+  A0 = defarg:parse_transform  (AST, Options),
+  A1 = erlpipe:parse_transform (A0,  Options),
+  A2 = iif:parse_transform     (A1,  Options),
+  A3 = listcomp:parse_transform(A2,  Options),
+  A4 = str:parse_transform     (A3,  Options),
+  A5 = gin_transform           (A4,  Options),
   A5.
 
 gin_transform(AST, Options) ->
