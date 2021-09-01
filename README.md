@@ -72,8 +72,9 @@ This transform makes code with cascading function calls much more readable by us
 pipeline operator. In the `LHS / RHS / ... Last.` notation, the result of evaluation of the LHS
 expression is passed as an argument to the RHS expression. This process continues until the `Last`
 expression is evaluated.  The head element of the pipeline must be either a term to which the
-arithmetic division `/` operator cannot apply (i.e. not integers, floats, functions), or if you
-need to pass integer(s) or float(s), wrap them in a list brackets.
+arithmetic division `/` operator cannot apply (i.e. not integers, floats, variables, functions),
+or if you need to pass an integer, float, variable, or a result of a function call, wrap it in a
+list brackets.
 
 It transforms code from:
 
