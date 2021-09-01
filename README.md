@@ -84,6 +84,8 @@ test1(Arg1, Arg2, Arg3) ->
   / mod:fun2
   / fun3()
   / fun4(Arg3, _)                               %% '_' is the placeholder for the return value of a previous function
+  / fun ff/1                                    %% Inplace function references are supported
+  / fun(I) -> I end                             %% This lambda will be evaluated as: (fun(I) -> I end)(_)
   / io_lib:format("~p\n", [_])
   / fun6([1,2,3], _, other_param)
   / fun7.
@@ -115,7 +117,7 @@ to the following equivalent:
 ```erlang
 test1(Arg1, Arg2, Arg3) ->
   fun7(fun6([1,2,3],
-            io_lib:format("~p\n", [fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))))]),
+            io_lib:format("~p\n", [(fun(I) -> I end)(ff(fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))))))]),
             other_param)).
 
 print(L) when is_list(L) ->
@@ -134,7 +136,7 @@ test2() ->
   2       = 4   / max(1, 2).
 ```
 
-Similarly to Elixir, a special `tap/2' function is implemented, which
+Similarly to Elixir, a special `tap/2` function is implemented, which
 passes the given argument to an anonymous function, returning the argument
 itself. The following:
 ```erlang
