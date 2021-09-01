@@ -30,7 +30,7 @@ functions.
 
 This parse transform addresses this shortcoming by extending the syntax
 of function definitions at the top level in a module to have a default
-expression such that for `A / Default' argument the `Default' will be
+expression such that for `A / Default` argument the `Default` will be
 used if the function is called in code without that argument.
 
 ```erlang
@@ -174,7 +174,7 @@ Some attempts to tackle this pipeline transform have been done by other develope
 
 Yet, we subjectively believe that the choice of syntax in this implementation of transform
 is more succinct and elegant, and doesn't attempt to modify the meaning of the `/` operator
-for arithmetic LHS types (i.e. integers and floats).
+for arithmetic LHS types (i.e. integers, floats, variables, and function calls).
 
 ## `listcomp`: Fold and Indexed List Comprehensions
 
