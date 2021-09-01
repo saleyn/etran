@@ -80,37 +80,38 @@ It transforms code from:
 
 ```erlang
 test1(Arg1, Arg2, Arg3) ->
-  [Arg1, Arg2]                                  %% Arguments must be enclosed in `[...]`
-  / fun1                                        %% In function calls parenthesis are optional
+  [Arg1, Arg2]                                   %% Arguments must be enclosed in `[...]`
+  / fun1                                         %% In function calls parenthesis are optional
   / mod:fun2
   / fun3()
-  / fun4(Arg3, _)                               %% '_' is the placeholder for the return value of a previous function
-  / fun ff/1                                    %% Inplace function references are supported
-  / fun(I) -> I end                             %% This lambda will be evaluated as: (fun(I) -> I end)(_)
+  / fun4(Arg3, _)                                %% '_' is the placeholder for the return value of a previous call
+  / fun ff/1                                     %% Inplace function references are supported
+  / fun(I) -> I end                              %% This lambda will be evaluated as: (fun(I) -> I end)(_)
   / io_lib:format("~p\n", [_])
   / fun6([1,2,3], _, other_param)
   / fun7.
 
 print(L) when is_list(L) ->
-  [3, L]                                        %% Multiple items in a list are passed as arguments to the first function
+  [3, L]                                         %% Multiple items in a list become arguments to the first function
   / lists:split
   / element(1, _)
   / binary_to_list
   / io:format("~s\n", [_]).
 
 test2() ->
-  3       = abc        / atom_to_list / length, %% Atoms    can be passed to '/' as is
-  3       = "abc"      / length,                %% Strings  can be passed to '/' as is
-  "abc"   = <<"abc">>  / binary_to_list,        %% Binaries can be passed to '/' as is
-  "1,2,3" = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
-                       / [[I] || I <- _]
-                       / string:join(_, ","),
-  "1"     = [min(1,2)] / integer_to_list,       %% Function calls, integer and float values must be passed as a list
-  "1"     = [1]        / integer_to_list,
-  "1.0"   = [1.0]      / float_to_list(_, [{decimals,1}]),
-  "abc\n" = "abc"      / (_ ++ "\n"),           %% Can use operators on the right hand side
-  2.0     = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
-  2       = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
+  % Result = Argument   / Function
+  3        = abc        / atom_to_list / length, %% Atoms    can be passed to '/' as is
+  3        = "abc"      / length,                %% Strings  can be passed to '/' as is
+  "abc"    = <<"abc">>  / binary_to_list,        %% Binaries can be passed to '/' as is
+  "1,2,3"  = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
+                        / [[I] || I <- _]
+                        / string:join(_, ","),
+  "1"      = [min(1,2)] / integer_to_list,       %% Function calls, integer and float value
+  "1"      = [1]        / integer_to_list,       %% arguments must be enclosed in a list.
+  "1.0"    = [1.0]      / float_to_list(_, [{decimals,1}]),
+  "abc\n"  = "abc"      / (_ ++ "\n"),           %% Can use operators on the right hand side
+  2.0      = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
+  2        = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
 ```
 
 to the following equivalent:
