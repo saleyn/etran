@@ -28,6 +28,34 @@
 %%% test1(A)   -> fun3(mod:fun2(fun1(A))).
 %%% test2(A,B) -> io:format("~p\n", [fun5(fun4(A,B))]).
 %%% '''
+%%%
+%%% Similarly to Elixir, a special `tap/2' function is implemented, which
+%%% passes the given argument to an anonymous function, returning the argument
+%%% itself. The following:
+%%% ```
+%%% f(A) -> A+1.
+%%% ...
+%%% test_tap() ->
+%%%   [10] / tap(f)
+%%%        / tap(fun f/1)
+%%%        / tap(fun(I) -> I+1 end).
+%%% '''
+%%% is equivalent to:
+%%% ```
+%%% ...
+%%% test_tap() ->
+%%%   begin
+%%%     f(10),
+%%%     begin
+%%%       f(10),
+%%%       begin
+%%%         (fun(I) -> I end)(10)
+%%%         10
+%%%       end
+%%%     end
+%%%   end.
+%%% '''
+%%%
 %%% For debugging the AST of the resulting transform, pass the following
 %%% options to the `erlc' compiler:
 %%% <dl>
@@ -86,11 +114,7 @@ apply_args({cons, _Loc, _, _} = List, Rhs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- cons_to_list(List)],
   [E]  = transform(fun replace/1, [Rhs]),
   do_apply(E, Args);
-apply_args(AArgs, Rhs) when is_list(AArgs), is_list(Rhs) ->
-  Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
-  [E]  = transform(fun replace/1, Rhs),
-  do_apply(E, Args);
-apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==string ->
+apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==string; Op=='fun' ->
   if is_tuple(RHS) ->
     do_apply(RHS, [Arg]);
   true ->
@@ -100,6 +124,10 @@ apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==stri
 apply_args({lc,_,_,_}=Lhs, Rhs) ->
   [LHS] = transform(fun(Forms) -> substitute(Rhs, Forms) end, Lhs),
   LHS;
+apply_args(AArgs, Rhs) when is_list(AArgs), is_list(Rhs) ->
+  Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
+  [E]  = transform(fun replace/1, Rhs),
+  do_apply(E, Args);
 apply_args(LHS, RHS) when is_tuple(LHS), is_list(RHS) ->
   do_apply(LHS, RHS);
 apply_args(LHS, RHS) when is_tuple(LHS), is_tuple(RHS) ->
@@ -114,7 +142,21 @@ do_apply({remote, Loc, _M, _F} = Function, Arguments) ->
 do_apply({call, Loc, Fun, []}, Arguments) ->
   {call, Loc, Fun, Arguments};
 
+do_apply({'fun', Loc, {function, Fun, _}}, Arguments) ->
+  {call, Loc, {atom, Loc, Fun}, Arguments};
+do_apply({'fun', Loc, {clauses, _}}=Fun, Arguments) ->
+  {call, Loc, Fun, Arguments};
+%do_apply({'fun', Loc, Clause}, Arguments) ->
+%  [NewClause] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Clause]),
+%  {'fun', Loc, NewClause};
+
+do_apply({call, _Loc, {atom, ALoc, tap}, [Arg]}, RHS) ->
+  %% Tapping into a function's call (the return is a passed-through RHS argument
+  Res = do_apply(Arg, RHS),
+  {block, ALoc, [Res, hd(RHS)]};
+
 do_apply({Op, Loc, Fun, Args} = LHS, RHS) when Op =:= call; Op =:= lc ->
+  % If we are asked to tap into the fun's call, wrap the call in a block
   [NewLHS] = transform(fun(Forms) -> substitute(RHS, Forms) end, [LHS]),
   case NewLHS of
     LHS ->
@@ -122,6 +164,7 @@ do_apply({Op, Loc, Fun, Args} = LHS, RHS) when Op =:= call; Op =:= lc ->
     ResLHS ->
       ResLHS
   end;
+
 %% Use of operators
 do_apply({op, Loc, Op, Lhs, Rhs}, Arguments) ->
   NewLhs = transform(fun replace/1, [Lhs]),
@@ -129,9 +172,6 @@ do_apply({op, Loc, Op, Lhs, Rhs}, Arguments) ->
   [LHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, NewLhs),
   [RHS] = transform(fun(Forms) -> substitute(Arguments, Forms) end, NewRhs),
   {op, Loc, Op, LHS, RHS};
-do_apply({'fun', Loc, Clause}, Arguments) ->
-  [NewClause] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Clause]),
-  {'fun', Loc, NewClause};
 
 do_apply({var, _, '_'}, [Arg]) ->
   Arg;

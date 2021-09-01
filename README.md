@@ -134,7 +134,34 @@ test2() ->
   2       = 4   / max(1, 2).
 ```
 
-Similar attempts to tackle this pipeline transform have been done by other developers:
+Similarly to Elixir, a special `tap/2' function is implemented, which
+passes the given argument to an anonymous function, returning the argument
+itself. The following:
+```erlang
+f(A) -> A+1.
+...
+test_tap() ->
+  [10] / tap(f)
+       / tap(fun f/1)
+       / tap(fun(I) -> I+1 end).
+```
+is equivalent to:
+```erlang
+...
+test_tap() ->
+  begin
+    f(10),
+    begin
+      f(10),
+      begin
+        (fun(I) -> I end)(10)
+        10
+      end
+    end
+  end.
+```
+
+Some attempts to tackle this pipeline transform have been done by other developers:
 
 * https://github.com/stolen/pipeline
 * https://github.com/oltarasenko/epipe

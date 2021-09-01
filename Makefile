@@ -36,5 +36,11 @@ debug:
 	@erl -pa _build/default/lib/etran/ebin -eval 'io:format("\n\nOutput:\n ~p\n", [$(file):test()]), halt(0).' -noinput
 	@rm -f _build/default/lib/etran/ebin/$(file).{erl,beam}
 
+debug-ui: DBG=debugger:start(), i:iaa([break]), i:ii($(module)), i:ib($(module),parse_transform,2)
+debug-ui: COMPILE=compile:file("$(file)", [{d,$(module)_orig},{d,$(module)_ast},{d,$(module)_src},debug_info,{parse_transform,$(module)}])
+debug-ui:
+	[ -z "$(module)" -o -z "$(file)" ] && echo "Run 'make $@ module=[erlpipe] file=t.erl'" && exit 1 || true
+	erl -pa _build/default/lib/etran/ebin -eval '$(DBG), $(COMPILE).'
+
 .PHONY: test
 .SUFFIXES:
