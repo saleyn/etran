@@ -114,7 +114,7 @@ apply_args({cons, _Loc, _, _} = List, Rhs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- cons_to_list(List)],
   [E]  = transform(fun replace/1, [Rhs]),
   do_apply(E, Args);
-apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==string; Op=='fun' ->
+apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==string ->
   if is_tuple(RHS) ->
     do_apply(RHS, [Arg]);
   true ->
@@ -144,6 +144,8 @@ do_apply({call, Loc, Fun, []}, Arguments) ->
 
 do_apply({'fun', Loc, {function, Fun, _}}, Arguments) ->
   {call, Loc, {atom, Loc, Fun}, Arguments};
+do_apply({'fun', Loc, {function, _Mod, _Fun, _Arity}=F}, Arguments) ->
+  {call, Loc, {'fun', Loc, F}, Arguments};
 do_apply({'fun', Loc, {clauses, _}}=Fun, Arguments) ->
   {call, Loc, Fun, Arguments};
 %do_apply({'fun', Loc, Clause}, Arguments) ->

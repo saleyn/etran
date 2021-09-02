@@ -22,6 +22,7 @@ erlpipe_test() ->
   ?assertEqual(28,      test6()),
   ?assertEqual(10,      test_tap()),
   ?assertEqual(2,       [2] / (fun t/1)),
+  ?assertEqual(2,       [[1,2]] / (fun erlang:length/1)),
   ?assertEqual(2,       [2] / t),
   ?assertEqual(2,       [2] /  fun(I) -> I end),
   ?assertEqual(2,       [2] / (fun(I) -> I end)(_)),
