@@ -103,12 +103,14 @@ test2() ->
   3        = abc        / atom_to_list / length, %% Atoms    can be passed to '/' as is
   3        = "abc"      / length,                %% Strings  can be passed to '/' as is
   "abc"    = <<"abc">>  / binary_to_list,        %% Binaries can be passed to '/' as is
+
   "1,2,3"  = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
-                        / [[I] || I <- _]
-                        / string:join(_, ","),
+                        / [[I] || I <- _]        %% The '_' placeholder is replaced by the return of tuple_to_list/1
+                        / string:join(","),      %% Here a call to string:join/2 is made
+
   "1"      = [min(1,2)] / integer_to_list,       %% Function calls, integer and float value
   "1"      = [1]        / integer_to_list,       %% arguments must be enclosed in a list.
-  "1.0"    = [1.0]      / float_to_list(_, [{decimals,1}]),
+  "1.0"    = [1.0]      / float_to_list([{decimals,1}]),
   "abc\n"  = "abc"      / (_ ++ "\n"),           %% Can use operators on the right hand side
   2.0      = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
   2        = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
