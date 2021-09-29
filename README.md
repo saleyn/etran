@@ -210,7 +210,7 @@ Example:
 ### Fold Comprehension
 
 To invoke the fold comprehension transform include the initial state
-assignment into a comprehension that returns a non-tuple expression:
+assignment into a list comprehension:
 ```erlang
   [S+I || S = 1, I <- L].
 %  ^^^    ^^^^^
@@ -258,7 +258,7 @@ print(Idx, I, S) ->
   Res.
 ```
 
-## `iif`: Ternary if
+## `iif`: Ternary and quaternary if
 
 This transform improves the code readability for cases that involve simple conditional
 `if/then/else` tests in the form `iif(Condition, Then, Else)`.  Since this is a parse
@@ -268,9 +268,9 @@ evaluates to `true` or `false` respectively.
 E.g.:
 
 ```erlang
-iif(tuple_size(T) == 3, good, bad).
+iif(tuple_size(T) == 3, good, bad).       %% Ternary if
 
-iif(some_fun(A), match, ok, error).
+iif(some_fun(A), match, ok, error).       %% Quaternary if
 
 nvl(L, undefined).
 
