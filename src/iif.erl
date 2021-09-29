@@ -9,7 +9,8 @@
 %%% compiler option.  In this case for given expressions `A',`B',`C', and `D'
 %%% the following code transforms will be done:
 %%% ```
-%%% iif(A, B, C)   -> begin V = A, case V of true -> B; _ -> C end end
+%%% iif(A, B)      -> case A of true -> B; _ -> undefined end
+%%% iif(A, B, C)   -> case A of true -> B; _ -> C end
 %%% iif(A,B,C,D)   -> case A of B -> C; _ -> D end
 %%% nvl(A,B)       -> case A of false -> B; undefined -> B; [] -> B; _ -> A end
 %%% nvl(A,B,C)     -> case A of false -> B; undefined -> B; [] -> B; _ -> C end
@@ -193,27 +194,20 @@ update(Node, _Opts) ->
           put(line, Line),
           %io:format("Application: Op=~p ~1024p\n", [erl_syntax:application_operator(Node), erl_syntax:application_arguments(Node)]),
           case erl_syntax:application_arguments(Node) of
+            [A,B] ->
+              %% This is a call to iif(A, B).
+              %% Replace it with:
+              %%   case A of true -> B; _ -> undefined end
+              syn_case(A, {atom, Line, true}, B, {atom, Line, undefined});
             [A,B,C] ->
               %% This is a call to iif(A, B, C).
               %% Replace it with:
-              %%   begin
-              %%     _V = A,
-              %%     case _V of true -> B; _ -> C end
-              %%   end
-              %Var = make_var_name(Line),
-              %syn_block([syn_match(Var, A), syn_case(Var, {atom, Line, true}, B, C)]);
+              %%   case A of true -> B; _ -> C end
               syn_case(A, {atom, Line, true}, B, C);
             [A,B,C,D] ->
               %% This is a call to iif(A, B, C, D).
               %% Replace it with:
-              %%   begin
-              %%     _V = A,
-              %%     case _V of B -> C; _ -> D end
-              %%   end
-              %Var = make_var_name(Line),
-              %syn_block([
-              %    syn_match(Var, A),
-              %    syn_case (Var, B, C, D)]);
+              %%   case A of B -> C; _ -> D end
               syn_case (A, B, C, D);
             _ ->
               Node

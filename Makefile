@@ -24,6 +24,14 @@ test:
 publish:
 	rebar3 hex $(if $(replace),publish --replace,cut)
 
+info::
+	@echo "make [compile]                             - Compile $(PROJECT)"
+	@echo "make clean                                 - Clean all build artifacts of $(PROJECT)"
+	@echo "make distclean                             - Clean all build artifacts of $(PROJECT) and build-aux/"
+	@echo "make publish [replace=1]                   - Publish/replace the library to hex.pm"
+	@echo "make debug module=Mod file=File            - Debug application of the Mod parse transform on the File"
+	@echo "make debug-ui module=Mod file=File         - Start a UI debugger for the Mod parse transform on the File"
+
 debug:
 	@[ -z "$(module)" -o -z "$(file)" ] && echo "Run 'make $@ module=[erlpipe] file=FileName[.erl] [print=1]'" && exit 1 || true
 	erlc +debug_info -pa _build/default/lib/etran/ebin -o _build/default/lib/etran/ebin src/$(module).erl

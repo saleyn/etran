@@ -86,6 +86,7 @@ test1(Arg1, Arg2, Arg3) ->
   / fun3()
   / fun4(Arg3, _)                                %% '_' is the placeholder for the return value of a previous call
   / fun ff/1                                     %% Inplace function references are supported
+  / fun erlang:length/1                          %% Inplace Mod:Fun/Arity function references are supported
   / fun(I) -> I end                              %% This lambda will be evaluated as: (fun(I) -> I end)(_)
   / io_lib:format("~p\n", [_])
   / fun6([1,2,3], _, other_param)
@@ -121,7 +122,8 @@ to the following equivalent:
 ```erlang
 test1(Arg1, Arg2, Arg3) ->
   fun7(fun6([1,2,3],
-            io_lib:format("~p\n", [(fun(I) -> I end)(ff(fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2))))))]),
+            io_lib:format("~p\n", [(fun(I) -> I end)(
+                                      erlang:length(ff(fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2)))))))]),
             other_param)).
 
 print(L) when is_list(L) ->
