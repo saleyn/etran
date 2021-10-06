@@ -162,7 +162,7 @@ test_tap() ->
     begin
       f(10),
       begin
-        (fun(I) -> I end)(10),
+        (fun(I) -> I+1 end)(10),
         10
       end
     end
