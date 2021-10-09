@@ -122,8 +122,9 @@ apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==stri
   end;
 %% List comprehension
 apply_args({lc,_,_,_}=Lhs, Rhs) ->
-  [LHS] = transform(fun(Forms) -> substitute(Rhs, Forms) end, Lhs),
-  LHS;
+  do_apply(Lhs, Rhs);
+  %LHS = transform(fun(Forms) -> substitute(Rhs, Forms) end, Lhs),
+  %do_apply(unwrap(Rhs), LHS);
 apply_args(AArgs, Rhs) when is_list(AArgs), is_list(Rhs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
   [E]  = transform(fun replace/1, Rhs),
@@ -148,9 +149,6 @@ do_apply({'fun', Loc, {function, _Mod, _Fun, _Arity}=F}, Arguments) ->
   {call, Loc, {'fun', Loc, F}, Arguments};
 do_apply({'fun', Loc, {clauses, _}}=Fun, Arguments) ->
   {call, Loc, Fun, Arguments};
-%do_apply({'fun', Loc, Clause}, Arguments) ->
-%  [NewClause] = transform(fun(Forms) -> substitute(Arguments, Forms) end, [Clause]),
-%  {'fun', Loc, NewClause};
 
 do_apply({call, _Loc, {atom, ALoc, tap}, [Arg]}, RHS) ->
   %% Tapping into a function's call (the return is a passed-through RHS argument
@@ -161,8 +159,10 @@ do_apply({Op, Loc, Fun, Args} = LHS, RHS) when Op =:= call; Op =:= lc ->
   % If we are asked to tap into the fun's call, wrap the call in a block
   [NewLHS] = transform(fun(Forms) -> substitute(RHS, Forms) end, [LHS]),
   case NewLHS of
-    LHS ->
+    LHS when is_list(RHS) ->
       {Op, Loc, Fun, RHS ++ Args};
+    LHS ->
+      do_apply(RHS, [LHS]);
     ResLHS ->
       ResLHS
   end;
