@@ -1,6 +1,6 @@
 {application,etran,
              [{description,"Erlang Parse Transoforms"},
-              {vsn, "0.3.3"},
+              {vsn,"0.3.4"},
               {applications,[kernel,stdlib]},
               {licenses,["BSD"]},
               {links,[{"Github","https://github.com/saleyn/etran"}]}]}.
