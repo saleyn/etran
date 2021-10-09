@@ -20,13 +20,13 @@ erlpipe_test() ->
   ?assertEqual(5.0,     test4(25, 5)),
   ?assertEqual(8,       test5()),
   ?assertEqual(28,      test6()),
+  ?assertEqual(7,       test7()),
   ?assertEqual(10,      test_tap()),
   ?assertEqual(2,       [2] / (fun t/1)),
   ?assertEqual(2,       [[1,2]] / (fun erlang:length/1)),
   ?assertEqual(2,       [2] / t),
   ?assertEqual(2,       [2] /  fun(I) -> I end),
   ?assertEqual(2,       [2] / (fun(I) -> I end)(_)),
-  ?assertEqual(6,       [I || I <- [1,2,3]] / lists:sum),
   %?assertEqual(11,      [1, 2, 3] / fun1 / fun2 / fun3),
   ?assertEqual(1.0,     10 / min(2,3) / 5.0),
   ?assertEqual(2.0,     10 / 5),
@@ -81,6 +81,13 @@ test6() ->
   abc / atom_to_list
       / length
       / (20 + _ + ("ee" / (_ ++ "efg") / length)).
+
+test7() ->
+  6 = [I || I <- [1,2,3]] / lists:sum,
+  [I || I <- [1,2,3]] / sumit(1).
+
+sumit(L, J) ->
+  f(lists:sum(L), J).
 
 test_tap() ->
   [10] / max(2)
