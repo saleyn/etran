@@ -155,7 +155,7 @@ do_apply({'fun', Loc, {clauses, _}}=Fun, Arguments) ->
 do_apply({call, _Loc, {atom, ALoc, tap}, [Arg]}, RHS) ->
   %% Tapping into a function's call (the return is a passed-through RHS argument
   Res = do_apply(Arg, RHS),
-  {block, ALoc, [Res, hd(RHS)]};
+  {block, ALoc, [{match, ALoc, {var, ALoc, '_'}, Res}, hd(RHS)]};
 
 do_apply({Op, Loc, Fun, Args} = LHS, RHS) when Op =:= call; Op =:= lc ->
   % If we are asked to tap into the fun's call, wrap the call in a block
@@ -190,7 +190,9 @@ cons_to_list([A]) ->
 %% Substitute '_', '_1', '_2', ... '_N' with the corresponding argument
 substitute(Args, {var, _, V}) when is_atom(V) ->
   case atom_to_list(V) of
-    "_"    -> hd(Args);
+    "_" when is_list(Args) ->
+      hd(Args);
+    "_"    -> Args;
     [$_|T] ->
       try
         M = list_to_integer(T),
