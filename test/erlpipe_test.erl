@@ -83,8 +83,9 @@ test6() ->
       / (20 + _ + ("ee" / (_ ++ "efg") / length)).
 
 test7() ->
-  6 = [I || I <- [1,2,3]] / lists:sum,
-  [I || I <- [1,2,3]] / sumit(1).
+  6   = [I || I <- [1,2,3]] / lists:sum,
+  [1] = [I || I <- [1,1,1]] / sets:from_list / sets:to_list,
+  [I ||  I <- [1,2,3]] / sumit(1).
 
 sumit(L, J) ->
   f(lists:sum(L), J).
