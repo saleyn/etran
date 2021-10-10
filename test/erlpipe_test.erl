@@ -84,7 +84,11 @@ test6() ->
 
 test7() ->
   6   = [I || I <- [1,2,3]] / lists:sum,
-  [1] = [I || I <- [1,1,1]] / sets:from_list / sets:to_list,
+  L   = [[1],[1],[1]],
+  [1] = [I || I <- L]
+      / lists:append
+      / sets:from_list
+      / sets:to_list,
   [I ||  I <- [1,2,3]] / sumit(1).
 
 sumit(L, J) ->
