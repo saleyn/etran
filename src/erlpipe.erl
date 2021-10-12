@@ -123,8 +123,6 @@ apply_args({Op, _Loc, _} = Arg, RHS) when Op==atom; Op==bin; Op==tuple; Op==stri
 %% List comprehension
 apply_args({lc,_,_,_}=Lhs, Rhs) ->
   do_apply(Lhs, Rhs);
-  %LHS = transform(fun(Forms) -> substitute(Rhs, Forms) end, Lhs),
-  %do_apply(unwrap(Rhs), LHS);
 apply_args(AArgs, Rhs) when is_list(AArgs), is_list(Rhs) ->
   Args = [hd(transform(fun replace/1, [F])) || F <- AArgs],
   [E]  = transform(fun replace/1, Rhs),
@@ -151,12 +149,28 @@ do_apply({'fun', Loc, {clauses, _}}=Fun, Arguments) ->
   {call, Loc, Fun, Arguments};
 
 do_apply({call, _Loc, {atom, ALoc, tap}, [Arg]}, RHS) ->
-  %% Tapping into a function's call (the return is a passed-through RHS argument
+  %% Tapping into a function's call (the return is a passed-through RHS argument)
   Res = do_apply(Arg, RHS),
+  % If we are asked to tap into the fun's call, wrap the call in a block
   {block, ALoc, [{match, ALoc, {var, ALoc, '_'}, Res}, hd(RHS)]};
 
+%% RHS is a tuple when it's the head of a pipeline:
+%%   E.g.  [I || I <- L] / ...
+do_apply({Op, Loc, Fun, Args} = LHS, RHS) when (Op =:= call orelse Op =:= lc), is_list(RHS) ->
+  [NewLHS] = transform(fun(Forms) -> substitute(RHS, Forms) end, [LHS]),
+  case NewLHS of
+    LHS ->
+      {Op, Loc, Fun, RHS ++ Args};
+    ResLHS ->
+      ResLHS
+  end;
+
+%% RHS is a list when it's in the middle of a pipeline:
+%%   E.g.  ... / [I || I <- _] / ...
+do_apply({Op, _, _, _} = LHS, RHS) when (Op =:= call orelse Op =:= lc), is_tuple(RHS) ->
+  do_apply(RHS, [LHS]);
+
 do_apply({Op, Loc, Fun, Args} = LHS, RHS) when Op =:= call; Op =:= lc ->
-  % If we are asked to tap into the fun's call, wrap the call in a block
   [NewLHS] = transform(fun(Forms) -> substitute(RHS, Forms) end, [LHS]),
   case NewLHS of
     LHS when is_list(RHS) ->

@@ -27,7 +27,6 @@ erlpipe_test() ->
   ?assertEqual(2,       [2] / t),
   ?assertEqual(2,       [2] /  fun(I) -> I end),
   ?assertEqual(2,       [2] / (fun(I) -> I end)(_)),
-  %?assertEqual(11,      [1, 2, 3] / fun1 / fun2 / fun3),
   ?assertEqual(1.0,     10 / min(2,3) / 5.0),
   ?assertEqual(2.0,     10 / 5),
   ?assertEqual(1,       [[1]] / hd),
@@ -84,11 +83,15 @@ test6() ->
 
 test7() ->
   6   = [I || I <- [1,2,3]] / lists:sum,
-  L   = [[1],[1],[1]],
-  [1] = [I || I <- L]
+  L   = [{a, [1]}, {b, [1]}, {c, [1]}],
+  [1] = [I || {_, I} <- L]
       / lists:append
       / sets:from_list
       / sets:to_list,
+  6   = {1,2,3}
+      / tuple_to_list
+      / [I || I <- _]
+      / lists:sum,
   [I ||  I <- [1,2,3]] / sumit(1).
 
 sumit(L, J) ->
