@@ -245,7 +245,7 @@ element(2, lists:foldl(fun(I, {Idx, S}) -> {Idx+1, do(Idx, S+I)} end, {1, 10}, L
 
 Example:
 ```erlang
-33 = [S + Idx*I || Idx, S = 0, I <- [10,20]],
+33 = [S + Idx*I || Idx, S = 1, I <- [10,20]],
 
 30 = [print(Idx, I, S) || Idx, S=0, I <- [10,20]].
 % Prints:
