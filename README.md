@@ -18,7 +18,7 @@ cascading function calls.
 | defarg                | Support default argument values in Erlang functions                                  |
 | erlpipe               | Elixir-like pipeline operator for Erlang                                             |
 | listcomp              | Fold Comprehension and Indexed List Comprehension                                    |
-| iif                   | Ternary if function including `iif/3`, `iif/4`, `ife/3`, `ife/4` parse transforms    |
+| iif                   | Ternary if function including `iif/3`, `iif/4`, `nvl/2`, `nvl/3` parse transforms    |
 | str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
 ## `defarg`: Support default argument values in Erlang functions
