@@ -322,9 +322,9 @@ This module implements a transform to stringify an Erlang term.
 
 Two other shorthand transforms are optionally supported:
 
-* `b2l(Binary)`     is equivalent to `binary_to_list(Binary)` (enabled by giving `{d,str_b2l}`
+* `b2l(Binary)`     is equivalent to `binary_to_list(Binary)` (enabled by giving `{d,str_b2l}`)
                     compilation option.
-* `i2l(Integer)`    is equivalent to `integer_to_list(Binary)` (enabled by giving `{d,str_i2l}`
+* `i2l(Integer)`    is equivalent to `integer_to_list(Binary)` (enabled by giving `{d,str_i2l}`)
                     compilation option.
 E.g.:
 ```
