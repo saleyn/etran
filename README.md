@@ -326,6 +326,7 @@ Two other shorthand transforms are optionally supported:
                     compilation option.
 * `i2l(Integer)`    is equivalent to `integer_to_list(Binary)` (enabled by giving `{d,str_i2l}`)
                     compilation option.
+
 E.g.:
 ```
 erlc +debug_info -Dstr_b2l -Dstr_i2l +'{parse_transform, str}' -o ebin your_module.erl
