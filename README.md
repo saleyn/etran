@@ -355,5 +355,7 @@ erlc +debug_info +'{parse_transform, etran}' -o ebin your_module.erl
 
 If you are using `rebar3` to build your project, then add to `rebar.config`:
 ```
+{deps, [{etran, ".*", {git, "git://github.com/saleyn/etran.git", "master"}}]}.
+
 {erl_opts, [debug_info, {parse_transform, etran}]}.
 ```
