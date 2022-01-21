@@ -117,9 +117,9 @@ test2() ->
   2        = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
 
 test3() ->
-  A = 10,
-  B = 5,
-  2 = A / B,                                     %% LHS variables (e.g. A) are not affected by the transform
+  A   = 10,
+  B   = 5,
+  2   = A / B,                                   %% LHS variables (e.g. A) are not affected by the transform
   2.0 = 10 / 5,                                  %% Arithmetic division for integers, floats, variables is unmodified
   2.0 = A / 5,                                   %% (ditto)
   5   = max(A,B) / 2.                            %% Use of division on LHS function calls is unaffected by the transform  
