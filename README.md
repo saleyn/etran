@@ -88,6 +88,13 @@ list brackets.
 It transforms code from:
 
 ```erlang
+print(L) when is_list(L) ->
+  [3, L]                                         %% Multiple items in a list become arguments to the first function
+  / lists:split                                  %% In Module:Function calls parenthesis are optional
+  / element(1, _)                                %% '_' is the placeholder for the return value of a previous call
+  / binary_to_list
+  / io:format("~s\n", [_]).
+
 test1(Arg1, Arg2, Arg3) ->
   [Arg1, Arg2]                                   %% Arguments must be enclosed in `[...]`
   / fun1                                         %% In function calls parenthesis are optional
@@ -100,13 +107,6 @@ test1(Arg1, Arg2, Arg3) ->
   / io_lib:format("~p\n", [_])
   / fun6([1,2,3], _, other_param)
   / fun7.
-
-print(L) when is_list(L) ->
-  [3, L]                                         %% Multiple items in a list become arguments to the first function
-  / lists:split
-  / element(1, _)
-  / binary_to_list
-  / io:format("~s\n", [_]).
 
 test2() ->
   % Result = Argument   / Function
