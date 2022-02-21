@@ -33,6 +33,15 @@ of function definitions at the top level in a module to have a default
 expression such that for `A / Default` argument the `Default` will be
 used if the function is called in code without that argument.
 
+Though it might seem more intuitive for programmers coming from other
+languages to use the assignment operator `=` for defining default arguments,
+using that operator would change the current meaning of pattern matching of
+arguments in function calls (i.e. `test(A=10)` is presently a valid expression).
+Therefore we chose the `/` operator for declaring default arguments because
+it has no valid meaning when applied in declaration of function arguments,
+and presently without the `defarg` transform, using this operator
+(e.g. `test(A / 10)`) would result in a syntax error detected by the compiler.
+
 ```erlang
 -export([t/2]).
 
@@ -188,6 +197,13 @@ Some attempts to tackle this pipeline transform have been done by other develope
 Yet, we subjectively believe that the choice of syntax in this implementation of transform
 is more succinct and elegant, and doesn't attempt to modify the meaning of the `/` operator
 for arithmetic LHS types (i.e. integers, floats, variables, and function calls).
+
+Why didn't we use `|>` operator instead of `/` to make it equivalent to Elixir?
+Parse transforms are applied only after the Erlang source code gets parsed to the AST
+representation, which must be in valid Erlang syntax.  The `|>` operator is not known to
+the Erlang parser, and therefore, using it would result in the compile-time error.  We
+had to select an operator that the Erlang parser would be happy with, and `/` was our choice
+because visually it resembles the pipe `|` character more than the other operators.
 
 ## `listcomp`: Fold and Indexed List Comprehensions
 
