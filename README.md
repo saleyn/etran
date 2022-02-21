@@ -179,6 +179,7 @@ test_tap() ->
 
 Some attempts to tackle this pipeline transform have been done by other developers:
 
+* https://github.com/fenollp/fancyflow
 * https://github.com/stolen/pipeline
 * https://github.com/oltarasenko/epipe
 * https://github.com/clanchun/epipe
