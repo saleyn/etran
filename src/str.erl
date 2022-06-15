@@ -5,7 +5,8 @@
 %%% Use `{parse_transform,str}' compiler's option to use this transform.
 %%% ```
 %%% str(Fmt, Args)     -> lists:flatten(io_lib:format(Fmt, Args))
-%%% throw(Fmt, Args)   -> throw(lists:flatten(io_lib:format(Fmt, Args))
+%%% throw(Fmt, Args)   -> erlang:throw(lists:flatten(io_lib:format(Fmt, Args))
+%%% error(Fmt, Args)   -> erlang:error(lists:flatten(io_lib:format(Fmt, Args))
 %%% i2l(Int)           -> integer_to_list(Int)      % Enabled with compiled with
 %%%                                                 % the `{d,str_i2l}' option
 %%% b2l(Bin)           -> binary_to_list(Bin)       % Enabled with compiled with
@@ -137,12 +138,13 @@ update4(str, Node, Line, _Opt) ->
     _ ->
       Node
   end;
-update4(throw, Node, Line, _Opt) ->
+update4(I, Node, Line, _Opt) when I==throw; I==error ->
   %% Replace throw(A, B) -> throw(lists:flatten(io_lib:format(A, B))).
+  %% Replace error(A, B) -> error(lists:flatten(io_lib:format(A, B))).
   put(line, Line),
   case erl_syntax:application_arguments(Node) of
     [A,B] ->
-      syn_call(throw, [syn_call(lists, flatten, [syn_call(io_lib, format, [A,B])])]);
+      syn_call(I, [syn_call(lists, flatten, [syn_call(io_lib, format, [A,B])])]);
     _ ->
       Node
   end;

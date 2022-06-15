@@ -25,6 +25,10 @@ indexed_fold_test() ->
   ?assertEqual(140,                    [do1(Idx, I, S) || Idx, S=0, I <- [10,20,30]]),
   ok.
 
+index_test() ->
+  ?assertEqual([{1,10},{2,20},{3,30}], [{Idx,I} || Idx, {req, FF} <- [{req, [10,20,30]}], I <- FF]),
+  ok.
+
 do1(Idx, I, S) ->
   S + Idx*I.
 
