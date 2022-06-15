@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!-- TITLE -->
+  <link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github-dark-dimmed.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/languages/erlang.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+<a name="top"></a>
+<div class="navcontainer">
+  <div class="navbar">
+    <div class="dropdown">
+      <i class="fa fa-bars dropbtn"></i>
+      <div class="dropdown-content">
+<a class="mod" href="defarg.html">defarg</a>
+<a class="mod" href="erlpipe.html">erlpipe</a>
+<a class="mod" href="etran.html">etran</a>
+<a class="mod" href="etran_util.html">etran_util</a>
+<a class="mod" href="iif.html">iif</a>
+<a class="mod" href="listcomp.html">listcomp</a>
+<a class="mod" href="str.html">str</a>
+      </div>
+    </div>
+    <a class="mod" href="index.html">Overview</a>
+    <!-- MODULE MENU BEGIN -->
+    <a class="mod" href="#top">Description</a>
+    <a class="mod" href="#types">Data Types</a>
+    <a class="mod" href="#index">Function Index</a>
+    <a class="mod" href="#functions">Function Details</a>
+    <!-- MODULE MENU END -->
+  </div>
+</div>
+<div class="main">
+<a name="top"></a>
+<hr>
+
+<h1>Module str</h1>
+
+<p><b>Authors:</b> Serge Aleynikov (<a href="mailto:saleyn(at)gmail(dot)com"><tt>saleyn(at)gmail(dot)com</tt></a>).</p>
+
+<h2><a href="#top" name="description">Description</a></h2><p>Parse transform that implements <code>str/2</code></p>
+  
+   Use <code>{parse_transform,str}</code> compiler's option to use this transform.
+   <pre ><code class="language-erlang">   str(Fmt, Args)     -&gt; lists:flatten(io_lib:format(Fmt, Args))
+   throw(Fmt, Args)   -&gt; erlang:throw(lists:flatten(io_lib:format(Fmt, Args))
+   error(Fmt, Args)   -&gt; erlang:error(lists:flatten(io_lib:format(Fmt, Args))
+   i2l(Int)           -&gt; integer_to_list(Int)      % Enabled with compiled with
+                                                   % the `{d,str_i2l}' option
+   b2l(Bin)           -&gt; binary_to_list(Bin)       % Enabled with compiled with
+                                                   % the `{d,str_b2l}' option
+   str(Term)          -&gt; str:str(Term)</code></pre >
+<h2><a href="#top" name="index">Function Index</a></h2>
+<table class="tab" width="100%" class="tab" summary="function index"><tr class="tab"><td class="tab"><a href="#get_float_fmt-0">get_float_fmt/0</a></td><td class="tab">Get custom float format from the process dictionary.</td></tr>
+<tr class="tab"><td class="tab"><a href="#parse_transform-2">parse_transform/2</a></td><td class="tab">Parse transform to be used by providing <code>{parse_transform, str}</code> option.</td></tr>
+<tr class="tab"><td class="tab"><a href="#reset_float_fmt-0">reset_float_fmt/0</a></td><td class="tab">Erase custom float format from the process dictionary.</td></tr>
+<tr class="tab"><td class="tab"><a href="#set_float_fmt-1">set_float_fmt/1</a></td><td class="tab">Store custom float format in the process dictionary
+       Return previously stored format.</td></tr>
+<tr class="tab"><td class="tab"><a href="#str-1">str/1</a></td><td class="tab">Stringify an argument.</td></tr>
+<tr class="tab"><td class="tab"><a href="#str-2">str/2</a></td><td class="tab"></td></tr>
+</table>
+
+<h2><a href="#top" name="functions">Function Details</a></h2>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="get_float_fmt-0">get_float_fmt/0</a></h3>
+<div class="spec">
+<p><tt>get_float_fmt() -&gt; any()</tt></p>
+<p> </p>
+</div><p>Get custom float format from the process dictionary</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="parse_transform-2">parse_transform/2</a></h3>
+<div class="spec">
+<p><tt>parse_transform(AST, Opts) -&gt; any()</tt></p>
+<p> </p>
+</div><p>Parse transform to be used by providing <code>{parse_transform, str}</code> option.</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="reset_float_fmt-0">reset_float_fmt/0</a></h3>
+<div class="spec">
+<p><tt>reset_float_fmt() -&gt; any()</tt></p>
+<p> </p>
+</div><p>Erase custom float format from the process dictionary</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="set_float_fmt-1">set_float_fmt/1</a></h3>
+<div class="spec">
+<p><tt>set_float_fmt(Opts) -&gt; any()</tt></p>
+<p> </p>
+</div><p>Store custom float format in the process dictionary
+       Return previously stored format.
+  Also see float_to_list/2 <a href="http://erlang.org/doc/man/erlang.html#float_to_list-2" target="_top"><tt>http://erlang.org/doc/man/erlang.html#float_to_list-2</tt></a></p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="str-1">str/1</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">str(I :: term()) -&gt; string()</code></pre ></p>
+<p> </p>
+</div><p>Stringify an argument</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="str-2">str/2</a></h3>
+<div class="spec">
+<p><tt>str(I, Opts) -&gt; any()</tt></p>
+<p> </p>
+</div>
+<hr>
+
+</div>
+</body>
+</html>

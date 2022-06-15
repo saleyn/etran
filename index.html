@@ -1,0 +1,433 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Collection of Erlang parse transforms</title>
+<meta name="keywords" content="erlang, parse transform, pipe, pipeline, map-reduce, map, reduce, ternary, if, iif">
+  <link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github-dark-dimmed.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/languages/erlang.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+<a name="top"></a>
+<div class="navcontainer">
+  <div class="navbar">
+    <div class="dropdown">
+      <i class="fa fa-bars dropbtn"></i>
+      <div class="dropdown-content">
+<a class="mod" href="defarg.html">defarg</a>
+<a class="mod" href="erlpipe.html">erlpipe</a>
+<a class="mod" href="etran.html">etran</a>
+<a class="mod" href="etran_util.html">etran_util</a>
+<a class="mod" href="iif.html">iif</a>
+<a class="mod" href="listcomp.html">listcomp</a>
+<a class="mod" href="str.html">str</a>
+      </div>
+    </div>
+    <a class="mod" href="index.html">Overview</a>
+  </div>
+</div>
+<div class="main">
+<a name="top"></a>
+<h1>Collection of Erlang parse transforms</h1>
+<p><b>Version:</b> 3147976</p>
+<p><b>Authors:</b> : Serge Aleynikov (<a href="mailto:saleyn(at)gmail.com"><tt>saleyn(at)gmail.com</tt></a>).</p>
+
+
+<h3><a name="Collection_of_Erlang_Parse_Transforms">Collection of Erlang Parse Transforms</a></h3>
+
+
+
+
+<p><strong>License</strong>: MIT License</p>
+
+<p><a href="https://github.com/saleyn/etran/actions/workflows/erlang.yml"><img src="https://github.com/saleyn/etran/actions/workflows/erlang.yml/badge.svg"></a>
+<a href="https://hex.pm/packages/etran"><img src="https://img.shields.io/hexpm/v/etran.svg"></a>
+<a href="https://hex.pm/packages/etran"><img src="https://img.shields.io/hexpm/dt/etran.svg"></a></p>
+
+<p>This library includes useful parse transforms including Elixir-like pipeline operator for
+cascading function calls.</p>
+
+<h1> Content</h1>
+
+<table class="tab">
+
+<tr class="tab"><th class="tab">Module</th><th class="tab">Description</th></tr>
+<tr class="tab"><td class="tab">defarg</td><td class="tab">Support default argument values in Erlang functions</td></tr>
+<tr class="tab"><td class="tab">erlpipe</td><td class="tab">Elixir-like pipe operator for Erlang</td></tr>
+<tr class="tab"><td class="tab">listcomp</td><td class="tab">Fold Comprehension and Indexed List Comprehension</td></tr>
+<tr class="tab"><td class="tab">iif</td><td class="tab">Ternary if function including <code>iif/3</code>, <code>iif/4</code>, <code>nvl/2</code>, <code>nvl/3</code> parse transforms</td></tr>
+<tr class="tab"><td class="tab">str</td><td class="tab">Stringification functions including <code>str/1</code>, <code>str/2</code>, and <code>throw/2</code> parse transforms</td></tr>
+</table>
+
+<h1> <code>defarg</code>: Support default argument values in Erlang functions</h1>
+
+<p>Presently the Erlang syntax doesn't allow function arguments to have default
+parameters.  Consequently a developer needs to replicate the function
+definition multiple times passing constant defaults to some parameters of
+functions.</p>
+
+<p>This parse transform addresses this shortcoming by extending the syntax
+of function definitions at the top level in a module to have a default
+expression such that for <code>A / Default</code> argument the <code>Default</code> will be
+used if the function is called in code without that argument.</p>
+
+<p>Though it might seem more intuitive for programmers coming from other
+languages to use the assignment operator <code>=</code> for defining default arguments,
+using that operator would change the current meaning of pattern matching of
+arguments in function calls (i.e. <code>test(A=10)</code> is presently a valid expression).
+Therefore we chose the <code>/</code> operator for declaring default arguments because
+it has no valid meaning when applied in declaration of function arguments,
+and presently without the <code>defarg</code> transform, using this operator
+(e.g. <code>test(A / 10)</code>) would result in a syntax error detected by the compiler.</p>
+
+
+
+<pre ><code class="language-erlang">-export([t/2]).
+test(A / 10, B / 20) -&gt;
+  A + B.</code></pre ><p>
+The code above is transformed to:</p>
+
+
+<pre ><code class="language-erlang">-export([t/2]).
+-export([t/0, t/1]).
+test()    -&gt; test(10);
+test(A)   -&gt; test(A, 20);
+test(A,B) -&gt; A+B.</code></pre >
+
+<p>The arguments with default values must be at the end of the argument list:</p>
+
+
+<pre ><code class="language-erlang">test(A, B, C / 1) -&gt;    %% This is valid
+  ...
+test(A / 1, B, C) -&gt;    %% This is invalid
+  ...</code></pre >
+
+<p>NOTE: The default arguments should be constant expressions.  Function calls in default
+arguments are not supported!</p>
+
+
+<pre ><code class="language-erlang">test(A / erlang:timestamp()) -&gt;     %% !!! Bad syntax
+  ...</code></pre >
+
+<h1> <code>erlpipe</code>: Erlang Pipe Operator</h1>
+
+<p>Inspired by the Elixir's <code>|&gt;</code> pipeline operator.
+This transform makes code with cascading function calls much more readable by using the <code>/</code> as the
+pipeline operator. In the <code>LHS / RHS / ... Last.</code> notation, the result of evaluation of the LHS
+expression is passed as an argument to the RHS expression. This process continues until the <code>Last</code>
+expression is evaluated.  The head element of the pipeline must be either a term to which the
+arithmetic division <code>/</code> operator cannot apply (i.e. not integers, floats, variables, functions),
+or if you need to pass an integer, float, variable, or a result of a function call, wrap it in a
+list brackets.</p>
+
+<p>It transforms code from:</p>
+
+
+
+<pre ><code class="language-erlang">print(L) when is_list(L) -&gt;
+  [3, L]                                         %% Multiple items in a list become arguments to the first function
+  / lists:split                                  %% In Module:Function calls parenthesis are optional
+  / element(1, _)                                %% '_' is the placeholder for the return value of a previous call
+  / binary_to_list
+  / io:format("~s\n", [_]).
+test1(Arg1, Arg2, Arg3) -&gt;
+  [Arg1, Arg2]                                   %% Arguments must be enclosed in `[...]`
+  / fun1                                         %% In function calls parenthesis are optional
+  / mod:fun2
+  / fun3()
+  / fun4(Arg3, _)                                %% '_' is the placeholder for the return value of a previous call
+  / fun ff/1                                     %% Inplace function references are supported
+  / fun erlang:length/1                          %% Inplace Mod:Fun/Arity function references are supported
+  / fun(I) -&gt; I end                              %% This lambda will be evaluated as: (fun(I) -&gt; I end)(_)
+  / io_lib:format("~p\n", [_])
+  / fun6([1,2,3], _, other_param)
+  / fun7.
+test2() -&gt;
+  % Result = Argument   / Function
+  3        = abc        / atom_to_list / length, %% Atoms    can be passed to '/' as is
+  3        = "abc"      / length,                %% Strings  can be passed to '/' as is
+  "abc"    = &lt;&lt;"abc"&gt;&gt;  / binary_to_list,        %% Binaries can be passed to '/' as is
+  "1,2,3"  = {$1,$2,$3} / tuple_to_list          %% Tuples   can be passed to '/' as is
+                        / [[I] || I &lt;- _]        %% The '_' placeholder is replaced by the return of tuple_to_list/1
+                        / string:join(","),      %% Here a call to string:join/2 is made
+  "1"      = [min(1,2)] / integer_to_list,       %% Function calls, integer and float value
+  "1"      = [1]        / integer_to_list,       %% arguments must be enclosed in a list.
+  "1.0"    = [1.0]      / float_to_list([{decimals,1}]),
+  "abc\n"  = "abc"      / (_ ++ "\n"),           %% Can use operators on the right hand side
+  2.0      = 4.0        / max(1.0, 2.0),         %% Expressions with lhs floats are unmodified
+  2        = 4          / max(1, 2).             %% Expressions with lhs integers are unmodified
+test3() -&gt;
+  A   = 10,
+  B   = 5,
+  2   = A / B,                                   %% LHS variables (e.g. A) are not affected by the transform
+  2.0 = 10 / 5,                                  %% Arithmetic division for integers, floats, variables is unmodified
+  2.0 = A / 5,                                   %% (ditto)
+  5   = max(A,B) / 2.                            %% Use of division on LHS function calls is unaffected by the transform</code></pre >
+
+<p>to the following equivalent:</p>
+
+
+
+<pre ><code class="language-erlang">test1(Arg1, Arg2, Arg3) -&gt;
+  fun7(fun6([1,2,3],
+            io_lib:format("~p\n", [(fun(I) -&gt; I end)(
+                                      erlang:length(ff(fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2)))))))]),
+            other_param)).
+print(L) when is_list(L) -&gt;
+  io:format("~s\n", [binary_to_list(element(1, lists:split(3, L)))]).
+test2() -&gt;
+  3       = length(atom_to_list(abc)),
+  3       = length("abc"),
+  "abc"   = binary_to_list(&lt;&lt;"abc"&gt;&gt;),
+  "1,2,3" = string:join([[I] || I &lt;- tuple_to_list({$1,$2,$3})], ","),
+  "1"     = integer_to_list(min(1,2)),
+  "1"     = integer_to_list(1),
+  "1.0"   = float_to_list(1.0, [{decimals,1}]),
+  "abc\n" = "abc" ++ "\n",
+  2.0     = 4.0 / max(1.0, 2.0),
+  2       = 4   / max(1, 2).</code></pre >
+
+<p>Similarly to Elixir, a special <code>tap/2</code> function is implemented, which
+passes the given argument to an anonymous function, returning the argument
+itself. The following:</p>
+
+
+<pre ><code class="language-erlang">f(A) -&gt; A+1.
+...
+test_tap() -&gt;
+  [10] / tap(f)
+       / tap(fun f/1)
+       / tap(fun(I) -&gt; I+1 end).</code></pre ><p>
+is equivalent to:</p>
+
+
+<pre ><code class="language-erlang">...
+test_tap() -&gt;
+  begin
+    f(10),
+    begin
+      f(10),
+      begin
+        (fun(I) -&gt; I+1 end)(10),
+        10
+      end
+    end
+  end.</code></pre >
+
+<p>Some attempts to tackle this pipeline transform have been done by other developers:</p>
+
+ <ul>
+   <li><a href="https://github.com/fenollp/fancyflow" target="_top"><tt>https://github.com/fenollp/fancyflow</tt></a>
+   </li>
+   <li><a href="https://github.com/stolen/pipeline" target="_top"><tt>https://github.com/stolen/pipeline</tt></a>
+   </li>
+   <li><a href="https://github.com/oltarasenko/epipe" target="_top"><tt>https://github.com/oltarasenko/epipe</tt></a>
+   </li>
+   <li><a href="https://github.com/clanchun/epipe" target="_top"><tt>https://github.com/clanchun/epipe</tt></a>
+   </li>
+   <li><a href="https://github.com/pouriya/pipeline" target="_top"><tt>https://github.com/pouriya/pipeline</tt></a>
+   </li>
+
+ </ul><p>
+Yet, we subjectively believe that the choice of syntax in this implementation of transform
+is more succinct and elegant, and doesn't attempt to modify the meaning of the <code>/</code> operator
+for arithmetic LHS types (i.e. integers, floats, variables, and function calls).</p>
+
+<p>Why didn't we use <code>|&gt;</code> operator instead of <code>/</code> to make it equivalent to Elixir?
+Parse transforms are applied only after the Erlang source code gets parsed to the AST
+representation, which must be in valid Erlang syntax.  The <code>|&gt;</code> operator is not known to
+the Erlang parser, and therefore, using it would result in the compile-time error.  We
+had to select an operator that the Erlang parser would be happy with, and <code>/</code> was our choice
+because visually it resembles the pipe <code>|</code> character more than the other operators.</p>
+
+<h1> <code>listcomp</code>: Fold and Indexed List Comprehensions</h1>
+
+<h2> Indexed List Comprehension</h2>
+
+<p>Occasionally the body of a list comprehension needs to know the index
+of the current item in the fold.  Consider this example:</p>
+
+
+<pre ><code class="language-erlang">[{1,10}, {2,20}] = element(1, lists:foldmapl(fun(I, N) -&gt; {{N, I}, N+1} end, 1, [10,20])).</code></pre ><p>
+Here the <code>N</code> variable is tracking the index of the current item <code>I</code> in the list.
+While the same result in this specific case can be achieved with
+<code>lists:zip(lists:seq(1,2), [10,20])</code>, in a more general case, there is no way to have
+an item counter propagated with the current list comprehension syntax.</p>
+
+<p>The <strong>Indexed List Comprehension</strong> accomplishes just that through the use of an unassigned
+variable immediately to the right of the <code>||</code> operator:</p>
+
+
+<pre ><code class="language-erlang">  [{Idx, I} || Idx, I &lt;- L].
+%              ^^^
+%               |
+%               +--- This variable becomes the index counter</code></pre ><p>
+Example:</p>
+
+
+<pre ><code class="language-erlang">[{1,10}, {2,20}] = [{Idx, I} || Idx, I &lt;- [10,20]].</code></pre >
+
+<h2> Fold Comprehension</h2>
+
+<p>To invoke the fold comprehension transform include the initial state
+assignment into a list comprehension:</p>
+
+
+<pre ><code class="language-erlang">  [S+I || S = 1, I &lt;- L].
+%  ^^^    ^^^^^
+%   |       |
+%   |       +--- State variable bound to the initial value
+%   +----------- The body of the foldl function</code></pre >
+
+<p>In this example the <code>S</code> variable gets assigned the initial state <code>1</code>, and
+the <code>S+I</code> expression represents the body of the fold function that
+is passed the iteration variable <code>I</code> and the state variable <code>S</code>:</p>
+
+
+<pre ><code class="language-erlang">lists:foldl(fun(I, S) -&gt; S+I end, 1, L).</code></pre >
+
+<p>A fold comprehension can be combined with the indexed list comprehension
+by using this syntax:</p>
+
+
+
+<pre ><code class="language-erlang">  [do(Idx, S+I) || Idx, S = 10, I &lt;- L].
+%  ^^^^^^^^^^^^    ^^^  ^^^^^^
+%       |           |     |
+%       |           |     +--- State variable bound to the initial value (e.g. 10)
+%       |           +--------- The index variable bound to the initial value of 1
+%       +--------------------- The body of the foldl function can use Idx and S</code></pre >
+
+<p>This code is transformed to:</p>
+
+
+<pre ><code class="language-erlang">element(2, lists:foldl(fun(I, {Idx, S}) -&gt; {Idx+1, do(Idx, S+I)} end, {1, 10}, L)).</code></pre >
+
+<p>Example:</p>
+
+
+<pre ><code class="language-erlang">33 = [S + Idx*I || Idx, S = 1, I &lt;- [10,20]],
+30 = [print(Idx, I, S) || Idx, S=0, I &lt;- [10,20]].
+% Prints:
+%   Item#1 running sum: 10
+%   Item#2 running sum: 30
+print(Idx, I, S) -&gt;
+  Res = S+I,
+  io:format("Item#~w running sum: ~w\n", [Idx, Res]),
+  Res.</code></pre >
+
+<h1> <code>iif</code>: Ternary and quaternary if</h1>
+
+<p>This transform improves the code readability for cases that involve simple conditional
+<code>if/then/else</code> tests in the form <code>iif(Condition, Then, Else)</code>.  Since this is a parse
+transform, the <code>Then</code> and <code>Else</code> expressions are evaluated <strong>only</strong> if the <code>Condition</code>
+evaluates to <code>true</code> or <code>false</code> respectively.</p>
+
+<p>E.g.:</p>
+
+
+
+<pre ><code class="language-erlang">iif(tuple_size(T) == 3, good, bad).       %% Ternary if
+iif(some_fun(A), match, ok, error).       %% Quaternary if
+nvl(L, undefined).
+nvl(L, nil, hd(L))</code></pre >
+
+<p>are transformed to:</p>
+
+
+
+<pre ><code class="language-erlang">case tuple_size(T) == 3 of
+  true      -&gt; good;
+  _         -&gt; bad
+end.
+case some_fun(A) of
+  match     -&gt; ok;
+  nomatch   -&gt; error
+end.
+case L of
+  []        -&gt; undefined;
+  false     -&gt; undefined;
+  undefined -&gt; undefined;
+  _         -&gt; L
+end.
+case L of
+  []        -&gt; nil;
+  false     -&gt; nil;
+  undefined -&gt; nil;
+  _         -&gt; hd(L)
+end.</code></pre >
+
+<h1> <code>str</code>: String transforms</h1>
+
+<p>This module implements a transform to stringify an Erlang term.</p>
+
+ <ul>
+   <li><code>str(Term)</code>       is equivalent to <code>lists:flatten(io_lib:format("~p", [Term]))</code> for
+                    terms that are not integers, floats, atoms, binaries and lists.
+                    Integers, atoms, and binaries are converted to string using <code>*_to_list/1</code>
+                    functions. Floats are converted using <code>float_to_list/2</code> where the second
+                    argument is controled by <code>str:set_float_fmt/1</code> and <code>str:reset_float_fmt/0</code>
+                    calls. Lists are converted to string using
+                    <code>lists:flatten(io_lib:format("~s", [Term]))</code> and if that fails, then using
+                    <code>lists:flatten(io_lib:format("~p", [Term]))</code> format.
+   </li>
+   <li><code>str(Fmt, Args)</code>  is equivalent to <code>lists:flatten(io_lib:format(Fmt,    Args))</code>.
+   </li>
+   <li><code>throw(Fmt,Args)</code> is equivalent to <code>throw(lists:flatten(io_lib:format(Fmt, Args)))</code>.
+   </li>
+
+ </ul><p>
+Two other shorthand transforms are optionally supported:</p>
+
+ <ul>
+   <li><code>b2l(Binary)</code>     is equivalent to <code>binary_to_list(Binary)</code> (enabled by giving <code>{d,str_b2l}</code>)
+                    compilation option.
+   </li>
+   <li><code>i2l(Integer)</code>    is equivalent to <code>integer_to_list(Binary)</code> (enabled by giving <code>{d,str_i2l}</code>)
+                    compilation option.
+   </li>
+
+ </ul><p>
+E.g.:</p>
+
+
+<pre ><code class="language-erlang">erlc +debug_info -Dstr_b2l -Dstr_i2l +'{parse_transform, str}' -o ebin your_module.erl</code></pre >
+
+<h1> Dowloading</h1>
+
+ <ul>
+   <li><a href="https://github.com/saleyn/etran">Github</a>
+   </li>
+   <li><a href="https://hex.pm/packages/etran">Hex.pm</a>
+   </li>
+
+ </ul>
+<h1> Building and Using</h1>
+
+
+
+<pre ><code class="language-erlang">$ make</code></pre >
+
+<p>To use the transforms, compile your module with the <code>+&apos;{parse_transform, Module}&apos;</code> command-line
+option, or include <code>-compile({parse_transform, Module}).</code> in your source code, where <code>Module</code>
+is one of the transform modules implemented in this project.</p>
+
+<p>To use all transforms implemented by the <code>etran</code> application, compile your module with this
+command-line option: <code>+&apos;{parse_transform, etran}&apos;</code>.</p>
+
+
+<pre ><code class="language-erlang">erlc +debug_info +'{parse_transform, etran}' -o ebin your_module.erl</code></pre >
+
+<p>If you are using <code>rebar3</code> to build your project, then add to <code>rebar.config</code>:</p>
+
+
+<pre ><code class="language-erlang">{deps, [{etran, ".*", {git, "git://github.com/saleyn/etran.git", "master"}}]}.
+{erl_opts, [debug_info, {parse_transform, etran}]}.</code></pre >
+
+<hr>
+</div>
+</body>
+</html>

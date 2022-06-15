@@ -1,0 +1,157 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!-- TITLE -->
+  <link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github-dark-dimmed.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/languages/erlang.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+<a name="top"></a>
+<div class="navcontainer">
+  <div class="navbar">
+    <div class="dropdown">
+      <i class="fa fa-bars dropbtn"></i>
+      <div class="dropdown-content">
+<a class="mod" href="defarg.html">defarg</a>
+<a class="mod" href="erlpipe.html">erlpipe</a>
+<a class="mod" href="etran.html">etran</a>
+<a class="mod" href="etran_util.html">etran_util</a>
+<a class="mod" href="iif.html">iif</a>
+<a class="mod" href="listcomp.html">listcomp</a>
+<a class="mod" href="str.html">str</a>
+      </div>
+    </div>
+    <a class="mod" href="index.html">Overview</a>
+    <!-- MODULE MENU BEGIN -->
+    <a class="mod" href="#top">Description</a>
+    <a class="mod" href="#types">Data Types</a>
+    <a class="mod" href="#index">Function Index</a>
+    <a class="mod" href="#functions">Function Details</a>
+    <!-- MODULE MENU END -->
+  </div>
+</div>
+<div class="main">
+<a name="top"></a>
+<hr>
+
+<h1>Module listcomp</h1>
+
+<p><b>Authors:</b> Serge Aleynikov (<a href="mailto:saleyn(at)gmail(dot)com"><tt>saleyn(at)gmail(dot)com</tt></a>).</p>
+
+<h2><a href="#top" name="description">Description</a></h2><p>Erlang map-reduce parse transform</p>
+  
+   <p>This transform introduces two modifications of the list comprehension syntax   
+that allow to perform a fold and mapfold on a list.</p>
+  
+   <h5><a name="Indexed_List_Comprehension">Indexed List Comprehension</a></h5>
+  
+   This extension of a list comprehension, passes an additional argument to the
+   left hand side of the comprehension, which is the index of the current item
+   in the list:
+   <pre ><code class="language-erlang">   [ io:format("Rec#~w: ~p\n", [I, N]) || I, N &lt;- L]
+                                          ^^
+   ```
+   The index is defined by the a variable listed after the `||' operator.
+   This is equivalent to the following:
+   ```
+   lists:mapfoldl(
+     fun(N, I) -&gt;
+       io:format("Rec#~w: ~p\n", [I, N]),
+       I+1
+     end, 1, L)
+   ```
+  
+   === Fold Comprehension ===
+  
+   To invoke the fold comprehension transform include the initial state
+   assignment into a comprehension that returns a non-tuple expression:
+   ```
+   [S+N || S = 1, N &lt;- L].
+    ^^^    ^^^^^</code></pre >
+  
+   In this example the <code>S</code> variable gets assigned the initial state <code>1</code>, and
+   the <code>S+N</code> expression represents the body of the fold function that
+   is passed the iteration variable <code>N</code> and the state variable <code>S</code>:
+   <pre ><code class="language-erlang">   lists:foldl(fun(N, S) -&gt; S+N end, 1, L).</code></pre >
+  
+   Fold comprehension can be combined with the indexed list comprehension:
+   <pre ><code class="language-erlang">   [running_sum(I, N, S+N) || I, S=5, N &lt;- L].
+  
+   running_sum(I, N, RunningSum) -&gt;
+     io:format("Rec#~w: ~p (~w)\n", [I, N, RunningSum]),
+     S.</code></pre >
+  
+   In this case the definition of the indexed fold comprehension would be
+   transformed to:
+   <pre ><code class="language-erlang">   element(2, lists:foldl(fun(I, {N, S}) -&gt;
+     running_sum(I, N, S), {N+1, S+N} end, {1,5}, L)),</code></pre >
+  
+   <h3><a name="Compilation">Compilation</a></h3>
+  
+   <p>When using this as a parse transform, include the
+   <code>{parse_transform,listcomp}</code> compiler option.</p>
+  
+   For debugging the AST of the resulting transform, pass the following
+   options to the <code>erlc</code> compiler:
+   <dl>
+   <li><code>-Dlistcomp_orig</code> - print the original AST before the transform</li>
+   <li><code>-Dlistcomp_ast</code>  - print the transformed AST</li>
+   <li><code>-Dlistcomp_src</code>  - print the resulting source code after the transform</li>
+   </dl>
+  
+<h2><a href="#top" name="index">Function Index</a></h2>
+<table class="tab" width="100%" class="tab" summary="function index"><tr class="tab"><td class="tab"><a href="#foldl-3">foldl/3</a></td><td class="tab">Fold over a list by additionally passing the list's current item number
+       to the folding fun.</td></tr>
+<tr class="tab"><td class="tab"><a href="#foldr-3">foldr/3</a></td><td class="tab">Fold over a list by additionally passing the list's current item number
+       to the folding fun.</td></tr>
+<tr class="tab"><td class="tab"><a href="#parse_transform-2">parse_transform/2</a></td><td class="tab">parse_transform entry point.</td></tr>
+</table>
+
+<h2><a href="#top" name="functions">Function Details</a></h2>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="foldl-3">foldl/3</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">foldl(Fun ::
+          fun((Position :: integer(),
+               Item :: term(),
+               Acc :: term()) -&gt;
+                  NewAcc :: term()),
+      Init :: term(),
+      List :: list()) -&gt;
+         term()</code></pre ></p>
+<p> </p>
+</div><p>Fold over a list by additionally passing the list's current item number
+       to the folding fun.  This function is similar to lists:foldl/3, except
+       that the fun takes the extra second integer argument that represents
+       the sequential number of the item from the list.</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="foldr-3">foldr/3</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">foldr(Fun ::
+          fun((Position :: integer(),
+               Item :: term(),
+               Acc :: term()) -&gt;
+                  NewAcc :: term()),
+      Init :: term(),
+      List :: list()) -&gt;
+         term()</code></pre ></p>
+<p> </p>
+</div><p>Fold over a list by additionally passing the list's current item number
+       to the folding fun.  This function is similar to lists:foldr/3, except
+       that the fun takes the extra second integer argument that represents
+       the sequential number of the item from the list.</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="parse_transform-2">parse_transform/2</a></h3>
+<div class="spec">
+<p><tt>parse_transform(AST, Options) -&gt; any()</tt></p>
+<p> </p>
+</div><p>parse_transform entry point</p>
+<hr>
+
+</div>
+</body>
+</html>

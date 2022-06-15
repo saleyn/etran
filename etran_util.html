@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!-- TITLE -->
+  <link rel="stylesheet" type="text/css" href="stylesheet.css" title="EDoc">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github-dark-dimmed.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/languages/erlang.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+<body>
+<a name="top"></a>
+<div class="navcontainer">
+  <div class="navbar">
+    <div class="dropdown">
+      <i class="fa fa-bars dropbtn"></i>
+      <div class="dropdown-content">
+<a class="mod" href="defarg.html">defarg</a>
+<a class="mod" href="erlpipe.html">erlpipe</a>
+<a class="mod" href="etran.html">etran</a>
+<a class="mod" href="etran_util.html">etran_util</a>
+<a class="mod" href="iif.html">iif</a>
+<a class="mod" href="listcomp.html">listcomp</a>
+<a class="mod" href="str.html">str</a>
+      </div>
+    </div>
+    <a class="mod" href="index.html">Overview</a>
+    <!-- MODULE MENU BEGIN -->
+    <a class="mod" href="#top">Description</a>
+    <a class="mod" href="#types">Data Types</a>
+    <a class="mod" href="#index">Function Index</a>
+    <a class="mod" href="#functions">Function Details</a>
+    <!-- MODULE MENU END -->
+  </div>
+</div>
+<div class="main">
+<a name="top"></a>
+<hr>
+
+<h1>Module etran_util</h1>
+
+<p><b>Authors:</b> Serge Aleynikov (<a href="mailto:saleyn(at)gmail(dot)com"><tt>saleyn(at)gmail(dot)com</tt></a>).</p>
+
+<h2><a href="#top" name="description">Description</a></h2>   Erlang parse transform utility functions
+<h2><a href="#top" name="index">Function Index</a></h2>
+<table class="tab" width="100%" class="tab" summary="function index"><tr class="tab"><td class="tab"><a href="#apply_transform-4">apply_transform/4</a></td><td class="tab">Apply parse transform with debug printing options.</td></tr>
+<tr class="tab"><td class="tab"><a href="#debug_options-2">debug_options/2</a></td><td class="tab">Get parse transforms debug options.</td></tr>
+<tr class="tab"><td class="tab"><a href="#parse_options-2">parse_options/2</a></td><td class="tab">Check if <code>KnownFlags</code> are found in Options.</td></tr>
+<tr class="tab"><td class="tab"><a href="#process-4">process/4</a></td><td class="tab">Call <code>Fun</code> for the AST and optionally print debug info.</td></tr>
+<tr class="tab"><td class="tab"><a href="#source_forms-2">source_forms/2</a></td><td class="tab">Decompile source code from the AST.</td></tr>
+<tr class="tab"><td class="tab"><a href="#transform-2">transform/2</a></td><td class="tab">Transform <code>Forms</code> by applying a lambda <code>Fun</code>.</td></tr>
+<tr class="tab"><td class="tab"><a href="#transform-3">transform/3</a></td><td class="tab">Transform <code>Forms</code> by applying a lambda <code>Fun</code>.</td></tr>
+</table>
+
+<h2><a href="#top" name="functions">Function Details</a></h2>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="apply_transform-4">apply_transform/4</a></h3>
+<div class="spec">
+<p><tt>apply_transform(Module, Fun, AST, Options) -&gt; any()</tt></p>
+<p> </p>
+</div><p>Apply parse transform with debug printing options</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="debug_options-2">debug_options/2</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">debug_options(Module :: atom(), Options :: list()) -&gt;
+                 #{orig =&gt; boolean(),
+                   ast =&gt; boolean(),
+                   src =&gt; boolean()}</code></pre ></p>
+<p> </p>
+</div><p>Get parse transforms debug options</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="parse_options-2">parse_options/2</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">parse_options(KnownFlags :: list(), Options :: list()) -&gt;
+                 [boolean()]</code></pre ></p>
+<p> </p>
+</div><p>Check if <code>KnownFlags</code> are found in Options.</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="process-4">process/4</a></h3>
+<div class="spec">
+<p><tt>process(Module, Fun, AST, Options) -&gt; any()</tt></p>
+<p> </p>
+</div><p>Call <code>Fun</code> for the AST and optionally print debug info</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="source_forms-2">source_forms/2</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">source_forms(AST :: list(), Options :: list()) -&gt; ok | string()</code></pre ></p>
+<p> </p>
+</div><p>Decompile source code from the AST</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="transform-2">transform/2</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">transform(Fun :: fun((Forms :: term()) -&gt; tuple() | continue),
+          Forms :: term()) -&gt;
+             list()</code></pre ></p>
+<p> </p>
+</div><p>Transform <code>Forms</code> by applying a lambda <code>Fun</code>.</p>
+
+<h3 class="function"><a href="#index"><i class="arrow up"></i></a><a  class="function" name="transform-3">transform/3</a></h3>
+<div class="spec">
+<p><pre ><code class="language-erlang">transform(Fun ::
+              fun((Forms :: term(), State :: term()) -&gt;
+                      {tuple() | continue, NewState :: term()}),
+          Forms :: term(),
+          State :: term()) -&gt;
+             {list(), NewState :: term()}</code></pre ></p>
+<p> </p>
+</div><p>Transform <code>Forms</code> by applying a lambda <code>Fun</code>.</p>
+<hr>
+
+</div>
+</body>
+</html>
