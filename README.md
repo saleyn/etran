@@ -40,7 +40,8 @@ arguments in function calls (i.e. `test(A=10)` is presently a valid expression).
 Therefore we chose the `/` operator for declaring default arguments because
 it has no valid meaning when applied in declaration of function arguments,
 and presently without the `defarg` transform, using this operator
-(e.g. `test(A / 10)`) would result in a syntax error detected by the compiler.
+(e.g. `test(A / 10) -> ...`) would result in a syntax error detected by the
+compiler.
 
 ```erlang
 -export([t/2]).
@@ -380,7 +381,7 @@ erlc +debug_info +'{parse_transform, etran}' -o ebin your_module.erl
 
 If you are using `rebar3` to build your project, then add to `rebar.config`:
 ```
-{deps, [{etran, ".*", {git, "git://github.com/saleyn/etran.git", "master"}}]}.
+{deps, [{etran, "0.5.0"}]}.
 
 {erl_opts, [debug_info, {parse_transform, etran}]}.
 ```
