@@ -2,13 +2,6 @@ PROJECT := $(notdir $(PWD))
 
 all: compile
 
--include build-aux/docs-addon.mk
-
-build-aux/docs-addon.mk:
-	@echo "Fetching build-aux/docs-addon.mk" && \
-		mkdir -p build-aux && \
-		curl -s -o build-aux/docs-addon.mk https://raw.githubusercontent.com/saleyn/util/master/build-aux/docs-addon.mk
-
 compile:
 	rebar3 $@
 
@@ -17,6 +10,9 @@ clean:
 
 distclean: clean
 	rm -f build-aux/*.mk
+
+docs doc:
+	rebar3 ex_doc
 
 test:
 	ERL_LIBS= rebar3 eunit
@@ -52,5 +48,5 @@ debug-ui:
 	[ -z "$(module)" -o -z "$(file)" ] && echo "Run 'make $@ module=[erlpipe] file=FileName[.erl]'" && exit 1 || true
 	erl -pa _build/default/lib/etran/ebin -eval '$(DBG), $(COMPILE).'
 
-.PHONY: test
+.PHONY: test doc
 .SUFFIXES:
