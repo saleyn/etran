@@ -335,23 +335,23 @@ end.
 
 This module implements a transform to stringify an Erlang term.
 
-* `str(Term)`       is equivalent to `lists:flatten(io_lib:format("~p", [Term]))` for
-                    terms that are not integers, floats, atoms, binaries and lists.
-                    Integers, atoms, and binaries are converted to string using `*_to_list/1`
-                    functions. Floats are converted using `float_to_list/2` where the second
-                    argument is controled by `str:set_float_fmt/1` and `str:reset_float_fmt/0`
-                    calls. Lists are converted to string using
-                    `lists:flatten(io_lib:format("~s", [Term]))` and if that fails, then using
-                    `lists:flatten(io_lib:format("~p", [Term]))` format.
+* `str(Term)` is equivalent to `lists:flatten(io_lib:format("~p", [Term]))` for
+  terms that are not integers, floats, atoms, binaries and lists.
+  Integers, atoms, and binaries are converted to string using `*_to_list/1`
+  functions. Floats are converted using `float_to_list/2` where the second
+  argument is controled by `str:set_float_fmt/1` and `str:reset_float_fmt/0`
+  calls. Lists are converted to string using
+  `lists:flatten(io_lib:format("~s", [Term]))` and if that fails, then using
+  `lists:flatten(io_lib:format("~p", [Term]))` format.
 * `str(Fmt, Args)`  is equivalent to `lists:flatten(io_lib:format(Fmt,    Args))`.
 * `throw(Fmt,Args)` is equivalent to `throw(lists:flatten(io_lib:format(Fmt, Args)))`.
 
 Two other shorthand transforms are optionally supported:
 
-* `b2l(Binary)`     is equivalent to `binary_to_list(Binary)` (enabled by giving `{d,str_b2l}`)
-                    compilation option.
-* `i2l(Integer)`    is equivalent to `integer_to_list(Binary)` (enabled by giving `{d,str_i2l}`)
-                    compilation option.
+* `b2l(Binary)` is equivalent to `binary_to_list(Binary)` (enabled by giving `{d,str_b2l}`)
+  compilation option.
+* `i2l(Integer)` is equivalent to `integer_to_list(Binary)` (enabled by giving `{d,str_i2l}`)
+  compilation option.
 
 E.g.:
 ```
