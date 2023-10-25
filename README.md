@@ -13,13 +13,13 @@ cascading function calls.
 
 ## Content
 
-| Module                | Description                                                                          |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| defarg                | Support default argument values in Erlang functions                                  |
-| erlpipe               | Elixir-like pipe operator for Erlang                                                 |
-| listcomp              | Fold Comprehension and Indexed List Comprehension                                    |
-| iif                   | Ternary if function including `iif/3`, `iif/4`, `nvl/2`, `nvl/3` parse transforms    |
-| str                   | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
+| Module      | Description                                                                          |
+| ----------- | ------------------------------------------------------------------------------------ |
+| `defarg`    | Support default argument values in Erlang functions                                  |
+| `erlpipe`   | Elixir-like pipe operator for Erlang                                                 |
+| `listcomp`  | Fold Comprehension and Indexed List Comprehension                                    |
+| `iif`       | Ternary if function including `iif/3`, `iif/4`, `nvl/2`, `nvl/3` parse transforms    |
+| `str`       | Stringification functions including `str/1`, `str/2`, and `throw/2` parse transforms |
 
 ## `defarg`: Support default argument values in Erlang functions
 
@@ -140,8 +140,10 @@ to the following equivalent:
 ```erlang
 test1(Arg1, Arg2, Arg3) ->
   fun7(fun6([1,2,3],
-            io_lib:format("~p\n", [(fun(I) -> I end)(
-                                      erlang:length(ff(fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2)))))))]),
+            io_lib:format("~p\n", [
+              (fun(I) -> I end)(
+                  erlang:length(
+                      ff(fun4(Arg3, fun3(mod2:fun2(fun1(Arg1, Arg2)))))))]),
             other_param)).
 
 print(L) when is_list(L) ->
