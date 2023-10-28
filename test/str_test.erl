@@ -39,11 +39,11 @@ str_test() ->
   ?assertEqual(<<"{a,1}">>,     bin({a, 1})).
 
 throw_test() ->
-  ?assertEqual("Test: 1", try throw("Test: ~w", [1]) catch throw:E -> E end),
-  ?assertEqual(ok,        try throw(ok)              catch throw:E -> E end).
+  ?assertEqual(<<"Test: 1">>, try throw("Test: ~w", [1]) catch throw:E -> E end),
+  ?assertEqual(ok,            try throw(ok)              catch throw:E -> E end).
 
 error_test() ->
-  ?assertEqual("Test: 1", try error("Test: ~w", [1]) catch error:E -> E end),
-  ?assertEqual(ok,        try error(ok)              catch error:E -> E end).
+  ?assertEqual(<<"Test: 1">>, try error("Test: ~w", [1]) catch error:E -> E end),
+  ?assertEqual(ok,            try error(ok)              catch error:E -> E end).
 
 -endif.

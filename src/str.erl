@@ -6,8 +6,8 @@
 %%% ```
 %%% str(Fmt, Args)     -> lists:flatten(io_lib:format(Fmt, Args))
 %%% bin(Fmt, Args)     -> list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))
-%%% throw(Fmt, Args)   -> erlang:throw(lists:flatten(io_lib:format(Fmt, Args))
-%%% error(Fmt, Args)   -> erlang:error(lists:flatten(io_lib:format(Fmt, Args))
+%%% throw(Fmt, Args)   -> erlang:throw(list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))
+%%% error(Fmt, Args)   -> erlang:error(list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))
 %%% i2l(Int)           -> integer_to_list(Int)      % Enabled with compiled with
 %%%                                                 % the `{d,str_i2l}' option
 %%% b2l(Bin)           -> binary_to_list(Bin)       % Enabled with compiled with
@@ -168,12 +168,14 @@ update4(Arg, Node, Line, _Opt) when Arg==str; Arg==bin ->
       Node
   end;
 update4(I, Node, Line, _Opt) when I==throw; I==error ->
-  %% Replace throw(A, B) -> throw(lists:flatten(io_lib:format(A, B))).
-  %% Replace error(A, B) -> error(lists:flatten(io_lib:format(A, B))).
+  %% Replace throw(A, B) -> throw(list_to_binary(lists:flatten(io_lib:format(A, B)))).
+  %% Replace error(A, B) -> error(list_to_binary(lists:flatten(io_lib:format(A, B)))).
   put(line, Line),
   case erl_syntax:application_arguments(Node) of
     [A,B] ->
-      syn_call(I, [syn_call(lists, flatten, [syn_call(io_lib, format, [A,B])])]);
+      syn_call(I, [syn_call(erlang, list_to_binary,
+                            [syn_call(lists, flatten, [
+                                      syn_call(io_lib, format, [A,B])])])]);
     _ ->
       Node
   end;
