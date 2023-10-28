@@ -5,6 +5,7 @@
 %%% Use `{parse_transform,str}' compiler's option to use this transform.
 %%% ```
 %%% str(Fmt, Args)     -> lists:flatten(io_lib:format(Fmt, Args))
+%%% bin(Fmt, Args)     -> list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))
 %%% throw(Fmt, Args)   -> erlang:throw(lists:flatten(io_lib:format(Fmt, Args))
 %%% error(Fmt, Args)   -> erlang:error(lists:flatten(io_lib:format(Fmt, Args))
 %%% i2l(Int)           -> integer_to_list(Int)      % Enabled with compiled with
@@ -41,7 +42,8 @@
 
 % If using this module as a parse transform, we need to export the following:
 -export([parse_transform/2]).
--export([str/1, str/2, reset_float_fmt/0, set_float_fmt/1, get_float_fmt/0]).
+-export([str/1, str/2, bin/1, bin/2]).
+-export([reset_float_fmt/0, set_float_fmt/1, get_float_fmt/0]).
 
 %%%-----------------------------------------------------------------------------
 %%% External API
@@ -61,12 +63,34 @@ str(I) when is_atom(I)    -> atom_to_list(I);
 str(I) ->
   lists:flatten(io_lib:format("~p", [I])).
 
+-type fmt_args() :: [
+  {decimals, Decimals :: 0..253} |
+  {scientific, Decimals :: 0..249} |
+  compact | short
+].
+
+%% @doc Stringify an argument with options passed to float_to_list/2 when 
+%% the first argument is a float
+-spec str(term(), fmt_args()) -> string().
 str(I, undefined) when is_float(I) ->
   float_to_list(I);
 str(I, Opts) when is_float(I) ->
   float_to_list(I, Opts);
 str(I, _Opts) ->
   str(I).
+
+%% @doc Stringify an argument and return as binary
+-spec bin(term()) -> binary().
+bin(I) -> list_to_binary(str(I)).
+
+%% @doc Stringify an argument and return as binary
+-spec bin(term(), fmt_args()) -> binary().
+bin(I, undefined) when is_float(I) ->
+  float_to_binary(I);
+bin(I, Opts) when is_float(I) ->
+  float_to_binary(I, Opts);
+bin(I, _) ->
+  list_to_binary(str(I)).
 
 %% @doc Erase custom float format from the process dictionary
 reset_float_fmt()   -> erase(float_fmt).
@@ -120,7 +144,7 @@ update2(Node, _, _)              -> Node.
 update3(Node, {atom, L, F}, Opt) -> update4(F, Node, L, Opt);
 update3(Node, _, _)              -> Node.
 
-update4(str, Node, Line, _Opt) ->
+update4(Arg, Node, Line, _Opt) when Arg==str; Arg==bin ->
   %% Replace str(A, B) -> lists:flatten(io_lib:format(A, B)).
   %%         str(A)    -> str:str(A).
   put(line, Line),
@@ -129,12 +153,16 @@ update4(str, Node, Line, _Opt) ->
       %% This is a call to str(Fmt, Args).
       %% Replace it with:
       %%   lists:flatten(io_libs:format(Fmt, Args)
-      syn_call(lists, flatten, [syn_call(io_lib, format, [A,B])]);
+      Res = syn_call(lists, flatten, [syn_call(io_lib, format, [A,B])]),
+      case Arg of
+        str -> Res;
+        bin -> syn_call(erlang, list_to_binary, [Res])
+      end;
     [A] ->
       %% This is a call to str(Arg).
       %% Replace it with:
-      %%   sprintf:str(Args)
-      syn_call(str, str, [A]);
+      %%   str:str(Args) or str:bin(Args)
+      syn_call(str, Arg, [A]);
     _ ->
       Node
   end;

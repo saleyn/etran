@@ -345,8 +345,10 @@ This module implements a transform to stringify an Erlang term.
   calls. Lists are converted to string using
   `lists:flatten(io_lib:format("~s", [Term]))` and if that fails, then using
   `lists:flatten(io_lib:format("~p", [Term]))` format.
-* `str(Fmt, Args)`  is equivalent to `lists:flatten(io_lib:format(Fmt,    Args))`.
+* `str(Fmt, Args)`  is equivalent to `lists:flatten(io_lib:format(Fmt, Args))`.
+* `bin(Fmt, Args)`  is equivalent to `list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))`.
 * `throw(Fmt,Args)` is equivalent to `throw(lists:flatten(io_lib:format(Fmt, Args)))`.
+* `error(Fmt,Args)` is equivalent to `error(lists:flatten(io_lib:format(Fmt, Args)))`.
 
 Two other shorthand transforms are optionally supported:
 

@@ -30,10 +30,13 @@ str_test() ->
   ?assertEqual("1",             b2l(<<"1">>)),
   ?assertEqual("abc",           str(<<"abc">>)),
   ?assertEqual("1",             str(1)),
+  ?assertEqual(<<"abc">>,       bin(<<"abc">>)),
+  ?assertEqual(<<"1">>,         bin(1)),
   str:set_float_fmt([{decimals, 2}]),
   ?assertEqual("1.00",          str(1.0)),
+  ?assertEqual(<<"1.00">>,      bin(1.0)),
   str:reset_float_fmt(),
-  ?assertEqual("{a,1}",         str({a, 1})).
+  ?assertEqual(<<"{a,1}">>,     bin({a, 1})).
 
 throw_test() ->
   ?assertEqual("Test: 1", try throw("Test: ~w", [1]) catch throw:E -> E end),
