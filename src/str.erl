@@ -5,9 +5,9 @@
 %%% Use `{parse_transform,str}' compiler's option to use this transform.
 %%% ```
 %%% str(Fmt, Args)     -> lists:flatten(io_lib:format(Fmt, Args))
-%%% bin(Fmt, Args)     -> list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))
-%%% throw(Fmt, Args)   -> erlang:throw(list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))
-%%% error(Fmt, Args)   -> erlang:error(list_to_binary(lists:flatten(io_lib:format(Fmt, Args)))
+%%% bin(Fmt, Args)     -> list_to_binary(io_lib:format(Fmt, Args))
+%%% throw(Fmt, Args)   -> erlang:throw(list_to_binary(io_lib:format(Fmt, Args))
+%%% error(Fmt, Args)   -> erlang:error(list_to_binary(io_lib:format(Fmt, Args))
 %%% i2l(Int)           -> integer_to_list(Int)      % Enabled with compiled with
 %%%                                                 % the `{d,str_i2l}' option
 %%% b2l(Bin)           -> binary_to_list(Bin)       % Enabled with compiled with
@@ -59,7 +59,7 @@ str(I) when is_list(I)    ->
     end);
 str(I) when is_integer(I) -> integer_to_list(I);
 str(I) when is_binary(I)  -> binary_to_list(I);
-str(I) when is_float(I)   -> str(I, get_float_fmt());
+str(I) when is_float(I)   -> float_to_list(I, get_float_fmt());
 str(I) when is_atom(I)    -> atom_to_list(I);
 str(I) ->
   lists:flatten(io_lib:format("~p", [I])).
@@ -73,12 +73,9 @@ str(I) ->
 %% @doc Stringify an argument with options passed to float_to_list/2 when 
 %% the first argument is a float
 -spec str(term(), fmt_args()) -> string().
-str(I, undefined) when is_float(I) ->
-  float_to_list(I);
-str(I, Opts) when is_float(I) ->
-  float_to_list(I, Opts);
-str(I, _Opts) ->
-  str(I).
+str(I, undefined) when is_float(I) -> float_to_list(I);
+str(I, Opts)      when is_float(I) -> float_to_list(I, Opts);
+str(I,_Opts)                       -> str(I).
 
 %% @doc Stringify an argument and return as binary
 -spec bin(term()) -> binary().
@@ -86,12 +83,17 @@ bin(I) -> list_to_binary(str(I)).
 
 %% @doc Stringify an argument and return as binary
 -spec bin(term(), fmt_args()) -> binary().
-bin(I, undefined) when is_float(I) ->
-  float_to_binary(I);
-bin(I, Opts) when is_float(I) ->
-  float_to_binary(I, Opts);
-bin(I, _) ->
-  list_to_binary(str(I)).
+bin(I, undefined) when is_float(I)   -> float_to_binary(I);
+bin(I, Opts)      when is_float(I)   -> float_to_binary(I, Opts);
+bin(I, _)         when is_binary(I)  -> I;
+bin(I, _)         when is_list(I)    ->
+  list_to_binary(
+    try          io_lib:format("~s", [I])
+    catch _:_ -> io_lib:format("~p", [I])
+    end);
+bin(I, _)         when is_integer(I) -> integer_to_binary(I);
+bin(I, _)         when is_atom(I)    -> atom_to_binary(I);
+bin(I, _)                            -> list_to_binary(io_lib:format("~p", [I])).
 
 %% @doc Erase custom float format from the process dictionary
 reset_float_fmt()   -> erase(float_fmt).
@@ -168,14 +170,12 @@ update4(Arg, Node, Line, _Opt) when Arg==str; Arg==bin ->
       Node
   end;
 update4(I, Node, Line, _Opt) when I==throw; I==error ->
-  %% Replace throw(A, B) -> throw(list_to_binary(lists:flatten(io_lib:format(A, B)))).
-  %% Replace error(A, B) -> error(list_to_binary(lists:flatten(io_lib:format(A, B)))).
+  %% Replace throw(A, B) -> throw(list_to_binary(io_lib:format(A, B))).
+  %% Replace error(A, B) -> error(list_to_binary(io_lib:format(A, B))).
   put(line, Line),
   case erl_syntax:application_arguments(Node) of
     [A,B] ->
-      syn_call(I, [syn_call(erlang, list_to_binary,
-                            [syn_call(lists, flatten, [
-                                      syn_call(io_lib, format, [A,B])])])]);
+      syn_call(I, [syn_call(erlang, list_to_binary, [syn_call(io_lib, format, [A,B])])]);
     _ ->
       Node
   end;
