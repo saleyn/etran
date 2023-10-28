@@ -13,6 +13,7 @@
 %%% b2l(Bin)           -> binary_to_list(Bin)       % Enabled with compiled with
 %%%                                                 % the `{d,str_b2l}' option
 %%% str(Term)          -> str:str(Term)
+%%% bin(Term)          -> str:bin(Term)
 %%% '''
 %%% @author Serge Aleynikov <saleyn(at)gmail(dot)com>
 %%% @end
