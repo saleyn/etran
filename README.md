@@ -1,4 +1,4 @@
-![Etran](assets/etran-banner.png)
+![Etran](https://github.com/saleyn/etran/blob/master/assets/etran-banner.png?raw=true)
 
 **Author**: Serge Aleynikov <saleyn(at)gmail.com>
 
