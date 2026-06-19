@@ -1,6 +1,11 @@
-{application,etran,
-             [{description,"Erlang Parse Transoforms"},
-              {vsn,"0.5.2"},
-              {applications,[kernel,stdlib]},
-              {licenses,["MIT"]},
-              {links,[{"Github","https://github.com/saleyn/etran"}]}]}.
+{application,etran, [
+  {description,"Erlang Parse Transoforms"},
+  {vsn,"0.5.3"},
+  {applications,[kernel,stdlib]},
+  {licenses,["MIT"]},
+  {links,[{"Github","https://github.com/saleyn/etran"}]},
+  {files, [
+    "src", "include", "Makefile", "rebar.config", "rebar.lock",
+    "README.md", "LICENSE", "assets"
+  ]}
+]}.

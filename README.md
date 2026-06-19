@@ -1,4 +1,4 @@
-# Collection of Erlang Parse Transforms
+![Etran](assets/etran-banner.png)
 
 **Author**: Serge Aleynikov <saleyn(at)gmail.com>
 
@@ -8,7 +8,7 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/etran.svg)](https://hex.pm/packages/etran)
 [![Hex.pm](https://img.shields.io/hexpm/dt/etran.svg)](https://hex.pm/packages/etran)
 
-This library includes useful parse transforms including Elixir-like pipeline operator for
+`etran` library includes useful parse transforms including Elixir-like pipeline operator for
 cascading function calls.
 
 ## Content
