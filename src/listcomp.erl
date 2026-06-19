@@ -242,11 +242,10 @@ replace2(Loc, ResBody0, Index, Match, Generators) ->
         % [{I,J,...} || I <- L1, J <- L2, ..., Filters]
         Vars    = [V || {V,_,_} <- VarsList],
         ArgVars = {tuple, Loc, Vars},
-        FArgs   = {tuple, Loc, [A || {_,A,_} <- VarsList]},
         ListLCs = {lc, Loc, ArgVars,
                       [{generate, GLoc, _Match, LList}
                        || {{var,GLoc,_}, _Match, LList} <- VarsList] ++ Filters},
-        {Loc, FArgs, ListLCs}
+        {Loc, ArgVars, ListLCs}
     end,
 
   CallMapFoldl = fun(InitForm, StateForm, FoldFun, FunBodyForm) ->

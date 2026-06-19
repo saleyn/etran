@@ -18,7 +18,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install gawk
-      run:  apt update && apt install sudo && sudo apt-get install gawk
+      run: |
+        sed -i 's|deb.debian.org/debian|archive.debian.org/debian|g; s|security.debian.org|archive.debian.org/debian-security|g' /etc/apt/sources.list
+        sed -i '/buster-updates/d' /etc/apt/sources.list
+        apt update && apt install sudo && sudo apt-get install -y gawk
     - name: Compile
       run:  make
     - name: Run tests
